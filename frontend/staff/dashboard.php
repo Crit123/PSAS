@@ -71,22 +71,39 @@ $page_title = "Security Dashboard | PSAS";
       ON SHIFT
     </div>
 
+    <!-- System / Hardware Status -->
+    <div class="dropdown">
+      <button class="sys-status-btn" id="sysStatusBtn" data-bs-toggle="dropdown" aria-expanded="false">
+        <span class="sys-status-dot" id="sysStatusDot"></span>
+        <span id="sysStatusLabel" class="d-none d-md-inline">All Systems Operational</span>
+        <span id="sysStatusLabelSm" class="d-md-none">5/5</span>
+        <i class="bi bi-chevron-down" style="font-size: 0.6rem; opacity: 0.6;"></i>
+      </button>
+      <div class="dropdown-menu dropdown-menu-end border-0 shadow-sm sys-status-menu">
+        <div class="sys-status-menu-header">System Status</div>
+        <div id="sysStatusList"></div>
+      </div>
+    </div>
+
     <!-- Notifications -->
     <div class="dropdown">
       <button class="notif-btn" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Notifications">
         <i class="bi bi-bell-fill"></i>
         <span class="notif-badge d-none" id="notif-count">0</span>
       </button>
-      <div class="dropdown-menu dropdown-menu-end border-0 shadow-sm" style="width: 280px; border-radius: var(--radius-md); padding: 0; border: var(--border) !important;">
-        <div class="px-3 py-2 border-bottom d-flex justify-content-between align-items-center">
-          <span style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--slate);">Alerts</span>
-          <a href="#" id="view-all-notifs" style="font-size: 0.72rem; color: var(--slate); font-weight: 600;">Clear all</a>
+      <div class="dropdown-menu dropdown-menu-end border-0 notification-dropdown">
+        <div class="notification-dropdown-header">
+          <span>Notifications</span>
+          <a href="#" id="view-all-notifs" data-bs-toggle="modal" data-bs-target="#notificationsModal">View all</a>
         </div>
-        <div id="notif-list-container" style="max-height: 200px; overflow-y: auto;">
-          <div class="text-center py-4 text-muted" id="no-notifs-msg" style="font-size: 0.8rem;">
+        <div id="notif-list-container" class="notification-dropdown-list">
+          <div class="text-center py-4 text-muted" id="no-notifs-msg" style="font-size: 0.83rem;">
             <i class="bi bi-bell-slash d-block mb-1" style="font-size: 1.2rem; color: var(--slate-light);"></i>
             No active alerts
           </div>
+        </div>
+        <div class="notification-dropdown-footer">
+          <a href="#" data-bs-toggle="modal" data-bs-target="#notificationsModal">View all notifications</a>
         </div>
       </div>
     </div>
@@ -101,7 +118,7 @@ $page_title = "Security Dashboard | PSAS";
         <div class="staff-avatar">R</div>
       </div>
       <ul class="dropdown-menu dropdown-menu-end border-0 shadow-sm" style="border-radius: var(--radius-md); margin-top: 0.5rem;">
-        <li><a class="dropdown-item" href="staff-settings.php" style="font-size: 0.85rem;"><i class="bi bi-gear me-2"></i>Settings</a></li>
+        <li><a class="dropdown-item" href="settings.php" style="font-size: 0.85rem;"><i class="bi bi-gear me-2"></i>Settings</a></li>
         <li><hr class="dropdown-divider"></li>
         <li><a class="dropdown-item text-danger" href="#" style="font-size: 0.85rem;"><i class="bi bi-box-arrow-right me-2"></i>End Shift &amp; Logout</a></li>
       </ul>
@@ -159,15 +176,24 @@ $page_title = "Security Dashboard | PSAS";
       <div class="psas-card m-0" style="height: 100%;">
         <div class="d-flex justify-content-between align-items-center mb-3">
           <h3 class="card-title-sm m-0"><i class="bi bi-upc-scan"></i> Live Scanner</h3>
-          <span class="status-chip live"><i class="bi bi-broadcast-pin"></i> Active</span>
+          <span class="status-chip live" id="scannerLiveChip"><i class="bi bi-broadcast-pin"></i> Active</span>
+        </div>
+
+        <!-- Shown only when a required scanner component is offline -->
+        <div class="scanner-offline-banner" id="scannerOfflineBanner">
+          <i class="bi bi-exclamation-triangle-fill"></i>
+          <div>
+            <strong>Scanner hardware offline.</strong>
+            <span>Use manual plate entry below, or check System Status.</span>
+          </div>
         </div>
 
         <!-- The Scanner Terminal -->
         <div class="scanner-box">
-          <div style="font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--slate); margin-bottom: 0.875rem;">RFID / QR / BARCODE</div>
+          <div style="font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--slate); margin-bottom: 0.875rem;">RFID / QR / BARCODE</div>
           <label for="rfid-input" class="visually-hidden">RFID Input</label>
           <input type="text" id="rfid-input" class="rfid-input mb-2" placeholder="SCAN OR ENTER UID" autocomplete="off" autofocus spellcheck="false">
-          <div style="font-size: 0.68rem; color: var(--slate-light); margin-top: 0.5rem;">Press Enter to simulate physical scan</div>
+          <div style="font-size: 0.75rem; color: var(--slate); margin-top: 0.5rem;">Press Enter to simulate physical scan</div>
 
           <button id="btn-nfc" class="btn btn-sm btn-outline-secondary mt-3 mx-auto d-flex align-items-center gap-1" style="font-size: 0.75rem; border-radius: var(--radius-sm);">
             <i class="bi bi-phone"></i> Simulate NFC Tap
@@ -238,9 +264,9 @@ $page_title = "Security Dashboard | PSAS";
     <div class="d-flex justify-content-between align-items-center mb-3">
       <h3 class="card-title-sm m-0"><i class="bi bi-list-ul"></i> Activity Log</h3>
       <div class="d-flex flex-column align-items-end gap-1">
-        <span style="font-size: 0.7rem; color: var(--slate-light); font-weight: 600;">Showing latest 10 · newest first</span>
+        <span style="font-size: 0.78rem; color: var(--slate); font-weight: 600;">Showing latest 10 · newest first</span>
         <button id="btn-view-all-logs" class="btn btn-sm" data-bs-toggle="modal" data-bs-target="#allLogsModal"
-          style="font-size: 0.7rem; font-weight: 700; color: var(--green); border: none; background: none; padding: 0; display: flex; align-items: center; gap: 0.3rem;">
+          style="font-size: 0.8rem; font-weight: 700; color: var(--green); border: none; background: none; padding: 0; display: flex; align-items: center; gap: 0.3rem;">
           <i class="bi bi-arrow-up-right-square"></i> View all logs
         </button>
       </div>
@@ -339,6 +365,53 @@ $page_title = "Security Dashboard | PSAS";
 
       <div class="modal-footer" style="border-top: 1px solid var(--ice-dark); padding: 0.75rem 1.5rem; background: var(--white); justify-content: space-between;">
         <span id="modal-log-filtered-count" style="font-size: 0.75rem; color: var(--slate); font-weight: 600;"></span>
+        <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal"
+          style="font-size: 0.8rem; border-radius: var(--radius-sm); font-weight: 600;">Close</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ── Notifications Modal ─────────────────────────────────────────────────── -->
+<div class="modal fade" id="notificationsModal" tabindex="-1" aria-labelledby="notificationsModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content" style="border: none; border-radius: var(--radius-lg); overflow: hidden;">
+
+      <div class="modal-header" style="background: var(--navy); border-bottom: none; padding: 1rem 1.5rem;">
+        <div>
+          <h5 class="modal-title" id="notificationsModalLabel" style="font-family: var(--font); color: var(--white); font-weight: 700; font-size: 0.95rem; margin: 0;">
+            <i class="bi bi-bell-fill me-2"></i>Notifications
+          </h5>
+          <div style="font-size: 0.68rem; color: var(--slate-light); text-transform: uppercase; letter-spacing: 0.08em; margin-top: 2px;">
+            <span id="modal-notif-count">0</span> total · <span id="modal-notif-unread-count">0</span> unread
+          </div>
+        </div>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <div class="modal-body p-0">
+        <!-- Category Filter Tabs -->
+        <div class="notification-filter-bar" id="notif-filter-bar">
+          <button class="notif-filter-tab active" data-filter="all">All</button>
+          <button class="notif-filter-tab" data-filter="unread">Unread</button>
+          <button class="notif-filter-tab" data-filter="parking">Parking</button>
+          <button class="notif-filter-tab" data-filter="entry-exit">Entry/Exit</button>
+          <button class="notif-filter-tab" data-filter="hardware">Hardware</button>
+          <button class="notif-filter-tab" data-filter="security">Security</button>
+          <button class="notif-filter-tab" data-filter="system">System</button>
+        </div>
+
+        <!-- Full Notification List -->
+        <div class="notification-modal-list" id="modal-notif-list">
+          <!-- populated by JS -->
+        </div>
+      </div>
+
+      <div class="modal-footer" style="border-top: 1px solid var(--ice-dark); padding: 0.75rem 1.5rem; background: var(--white); justify-content: space-between;">
+        <button type="button" id="btn-mark-all-read" class="btn btn-sm" style="font-size: 0.8rem; font-weight: 700; color: var(--green); border: none; background: none; padding: 0;">
+          <i class="bi bi-check2-all me-1"></i>Mark all as read
+        </button>
         <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal"
           style="font-size: 0.8rem; border-radius: var(--radius-sm); font-weight: 600;">Close</button>
       </div>

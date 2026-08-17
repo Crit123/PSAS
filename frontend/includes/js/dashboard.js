@@ -25,6 +25,83 @@ let unreadNotifs = 0;
 let shiftStats = { entries: 385, exits: 243, denied: 0 };
 const currentlyParkedPlates = new Set(['ABC-1234', 'NFC-111']);
 
+// ── HARDWARE / SYSTEM STATUS ────────────────────────────────────────────────
+// TODO: Replace with fetch('api/hardware_status.php') polled on an interval.
+let hardwareStatus = {
+  'RFID Reader': 'online',
+  'QR Scanner':  'online',
+  'Sensors':     'online',
+  'Gate':        'online',
+  'Network':     'online'
+};
+
+function renderSystemStatus() {
+  const btn   = document.getElementById('sysStatusBtn');
+  const list  = document.getElementById('sysStatusList');
+  const labelLg = document.getElementById('sysStatusLabel');
+  const labelSm = document.getElementById('sysStatusLabelSm');
+
+  const entries = Object.entries(hardwareStatus);
+  const onlineCount = entries.filter(([, v]) => v === 'online').length;
+  const total = entries.length;
+  const scannerDown = hardwareStatus['RFID Reader'] !== 'online' && hardwareStatus['QR Scanner'] !== 'online';
+
+  btn.classList.remove('warning', 'critical');
+  if (onlineCount === total) {
+    labelLg.textContent = 'All Systems Operational';
+  } else if (scannerDown || hardwareStatus['Gate'] !== 'online') {
+    btn.classList.add('critical');
+    labelLg.textContent = `${onlineCount}/${total} Systems Online`;
+  } else {
+    btn.classList.add('warning');
+    labelLg.textContent = `${onlineCount}/${total} Systems Online`;
+  }
+  labelSm.textContent = `${onlineCount}/${total}`;
+
+  list.innerHTML = entries.map(([name, state]) => `
+    <div class="sys-status-row">
+      <span>${name}</span>
+      <span class="sys-badge ${state}">${state}</span>
+    </div>
+  `).join('');
+
+  // Gate the scanner UI when both scan input methods are down
+  const banner = document.getElementById('scannerOfflineBanner');
+  const liveChip = document.getElementById('scannerLiveChip');
+  if (scannerDown) {
+    banner.classList.add('show');
+    rfidInput.disabled = true;
+    rfidInput.placeholder = 'Scanner offline — use manual entry';
+    liveChip.innerHTML = '<i class="bi bi-slash-circle"></i> Offline';
+    liveChip.className = 'status-chip disabled';
+  } else {
+    banner.classList.remove('show');
+    rfidInput.disabled = false;
+    rfidInput.placeholder = 'Tap RFID card or scan QR code…';
+    liveChip.innerHTML = '<i class="bi bi-broadcast-pin"></i> Active';
+    liveChip.className = 'status-chip live';
+  }
+}
+
+// Demo-only: occasionally flip a component offline to show the state working.
+// TODO: remove once hardware_status.php polling is wired in.
+function simulateHardwareFlaps() {
+  setInterval(() => {
+    const keys = Object.keys(hardwareStatus);
+    const key = keys[Math.floor(Math.random() * keys.length)];
+    const wasOffline = hardwareStatus[key] === 'offline';
+    hardwareStatus[key] = wasOffline ? 'online' : (Math.random() < 0.15 ? 'offline' : hardwareStatus[key]);
+    if (wasOffline || hardwareStatus[key] === 'offline') {
+      renderSystemStatus();
+      if (hardwareStatus[key] === 'offline') {
+        addNotification('Hardware Alert', `${key} went offline.`, 'hardware');
+      } else {
+        addNotification('Hardware Restored', `${key} connection restored.`, 'hardware');
+      }
+    }
+  }, 20000);
+}
+
 // DOM Elements
 const rfidInput         = document.getElementById('rfid-input');
 const scanResult        = document.getElementById('scan-result');
@@ -41,13 +118,20 @@ const detectedActionBadge = document.getElementById('detected-action-badge');
 // ── INITIALIZATION ──────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   renderZoneCards();
+  renderSystemStatus();
+  simulateHardwareFlaps();
+  seedNotifications();
   rfidInput.focus();
   simulateRealTimeAlerts();
 });
 
 // Keep focus on scanner for hardware RFID input
+// (Skip entirely while a Bootstrap modal is open — otherwise this steals
+//  focus from controls inside the modal, like the log filter <select>s,
+//  and Bootstrap's modal focus trap yanks focus back to the close button.)
 document.addEventListener('click', (e) => {
-  if (!e.target.closest('input') && !e.target.closest('button') && !e.target.closest('.dropdown-menu')) {
+  if (document.body.classList.contains('modal-open')) return;
+  if (!e.target.closest('input') && !e.target.closest('select') && !e.target.closest('button') && !e.target.closest('.dropdown-menu')) {
     rfidInput.focus();
   }
 });
@@ -69,6 +153,7 @@ document.getElementById('btn-nfc').addEventListener('click', () => {
 
 function processCode(code) {
   // TODO: fetch('api/validate_rfid.php?code=' + code)
+  if (rfidInput.disabled) return; // scanner hardware offline — ignore stray input
   const data = DEMO_VEHICLES[code];
 
   if (data) {
@@ -393,45 +478,165 @@ function showToast(title, message, type = 'success') {
   }, 4000);
 }
 
+// ── NOTIFICATIONS ────────────────────────────────────────────────────────────
+// TODO: Replace mock seed data + interval with a WebSocket/SSE subscription
+// backed by api/notifications.php.
+const NOTIF_ICONS = {
+  parking:    'bi-p-circle-fill',
+  'entry-exit': 'bi-car-front-fill',
+  hardware:   'bi-cpu-fill',
+  security:   'bi-shield-exclamation',
+  system:     'bi-gear-fill'
+};
+const NOTIF_LABELS = {
+  parking: 'Parking', 'entry-exit': 'Entry/Exit', hardware: 'Hardware',
+  security: 'Security', system: 'System'
+};
+
+let notifications = [];
+let notifIdSeq = 1;
+
+function addNotification(title, message, category = 'system', silent = false) {
+  const notif = {
+    id: notifIdSeq++,
+    title, message, category,
+    timestamp: Date.now(),
+    read: false
+  };
+  notifications.unshift(notif);
+  if (!silent) {
+    showToast(title, message, category === 'security' ? 'error' : (category === 'hardware' ? 'warning' : 'success'));
+  }
+  renderNotifDropdown();
+  renderNotifModal();
+  updateNotifBadge();
+}
+
+function updateNotifBadge() {
+  unreadNotifs = notifications.filter(n => !n.read).length;
+  const badge = document.getElementById('notif-count');
+  badge.innerText = unreadNotifs > 9 ? '9+' : unreadNotifs;
+  badge.classList.toggle('d-none', unreadNotifs === 0);
+}
+
+function timeAgo(ts) {
+  const diffMin = Math.max(0, Math.floor((Date.now() - ts) / 60000));
+  if (diffMin < 1) return 'Just now';
+  if (diffMin === 1) return '1 minute ago';
+  if (diffMin < 60) return `${diffMin} minutes ago`;
+  const diffHr = Math.floor(diffMin / 60);
+  if (diffHr === 1) return '1 hour ago';
+  if (diffHr < 24) return `${diffHr} hours ago`;
+  return `${Math.floor(diffHr / 24)} day(s) ago`;
+}
+
+function notifItemHTML(n) {
+  return `
+    <a href="#" class="notification-item ${n.read ? 'read' : 'unread'}" data-notif-id="${n.id}">
+      <div class="notification-icon ${n.category}"><i class="bi ${NOTIF_ICONS[n.category]}"></i></div>
+      <div class="notification-body">
+        <p class="notification-title">${!n.read ? '<span class="unread-dot"></span>' : ''}${n.title}</p>
+        <p class="notification-message">${n.message}</p>
+        <div class="notification-meta">
+          <span class="notification-category ${n.category}">${NOTIF_LABELS[n.category]}</span>
+          <span class="notification-time">${timeAgo(n.timestamp)}</span>
+        </div>
+      </div>
+    </a>`;
+}
+
+function renderNotifDropdown() {
+  const listContainer = document.getElementById('notif-list-container');
+  if (notifications.length === 0) {
+    listContainer.innerHTML = `
+      <div class="text-center py-4 text-muted" id="no-notifs-msg" style="font-size: 0.83rem;">
+        <i class="bi bi-bell-slash d-block mb-1" style="font-size: 1.2rem; color: var(--slate-light);"></i>
+        No active alerts
+      </div>`;
+    return;
+  }
+  listContainer.innerHTML = notifications.slice(0, 5).map(notifItemHTML).join('');
+}
+
+let notifModalFilter = 'all';
+
+function renderNotifModal() {
+  const list = document.getElementById('modal-notif-list');
+  document.getElementById('modal-notif-count').textContent = notifications.length;
+  document.getElementById('modal-notif-unread-count').textContent = notifications.filter(n => !n.read).length;
+
+  let filtered = notifications;
+  if (notifModalFilter === 'unread') {
+    filtered = notifications.filter(n => !n.read);
+  } else if (notifModalFilter !== 'all') {
+    filtered = notifications.filter(n => n.category === notifModalFilter);
+  }
+
+  if (filtered.length === 0) {
+    list.innerHTML = `
+      <div class="notification-empty">
+        <i class="bi bi-bell-slash"></i>
+        <strong>No notifications</strong>
+        <span>You're all caught up.</span>
+      </div>`;
+    return;
+  }
+  list.innerHTML = filtered.map(notifItemHTML).join('');
+}
+
+// Click a notification (dropdown or modal) → mark it read
+document.addEventListener('click', (e) => {
+  const item = e.target.closest('.notification-item');
+  if (!item) return;
+  e.preventDefault();
+  const id = parseInt(item.dataset.notifId, 10);
+  const n = notifications.find(n => n.id === id);
+  if (n && !n.read) {
+    n.read = true;
+    updateNotifBadge();
+    renderNotifDropdown();
+    renderNotifModal();
+  }
+});
+
+// Category filter tabs inside the modal
+document.getElementById('notif-filter-bar').addEventListener('click', (e) => {
+  const tab = e.target.closest('.notif-filter-tab');
+  if (!tab) return;
+  document.querySelectorAll('.notif-filter-tab').forEach(t => t.classList.remove('active'));
+  tab.classList.add('active');
+  notifModalFilter = tab.dataset.filter;
+  renderNotifModal();
+});
+
+// Mark all as read
+document.getElementById('btn-mark-all-read').addEventListener('click', () => {
+  notifications.forEach(n => n.read = true);
+  updateNotifBadge();
+  renderNotifDropdown();
+  renderNotifModal();
+});
+
+// Refresh "time ago" labels + re-render modal filters each time it opens
+document.getElementById('notificationsModal').addEventListener('show.bs.modal', () => {
+  renderNotifModal();
+});
+
 // Simulated real-time alerts
 function simulateRealTimeAlerts() {
   // TODO: Replace with WebSocket or SSE subscription
-  setInterval(() => { addNotification('Invalid RFID attempt at Gate 2', 'warning'); }, 60000);
+  setInterval(() => {
+    addNotification('Invalid RFID Attempt', 'Unrecognized card presented at Gate 2.', 'security');
+  }, 60000);
 }
 
-function addNotification(msg, type) {
-  unreadNotifs++;
-  const badge = document.getElementById('notif-count');
-  badge.innerText = unreadNotifs;
-  badge.classList.remove('d-none');
-
-  showToast('System Alert', msg, type);
-
-  const listContainer = document.getElementById('notif-list-container');
-  const emptyMsg      = document.getElementById('no-notifs-msg');
-  if (emptyMsg) emptyMsg.remove();
-
-  const notifEl = document.createElement('a');
-  notifEl.className = 'dropdown-item py-2 border-bottom';
-  notifEl.href = '#';
-  notifEl.innerHTML = `
-    <div class="d-flex align-items-center gap-2">
-      <i class="bi bi-exclamation-triangle-fill text-${type}" style="font-size: 0.9rem;"></i>
-      <span style="font-size: 0.78rem; white-space: normal; font-weight: 500;">${msg}</span>
-    </div>
-    <small style="font-size: 0.63rem; color: var(--slate-light); margin-left: 1.4rem; display: block; margin-top: 2px;">Just now</small>
-  `;
-  listContainer.insertBefore(notifEl, listContainer.firstChild);
+// Seed a few realistic starting notifications (demo only)
+function seedNotifications() {
+  addNotification('Parking Area Near Full', 'Zone A is currently 85% occupied.', 'parking', true);
+  addNotification('Vehicle Entry', 'ABC-1234 entered through Gate 1.', 'entry-exit', true);
+  addNotification('RFID Reader', 'RFID reader connection restored.', 'hardware', true);
+  notifications.forEach((n, i) => { n.timestamp = Date.now() - (i + 1) * 5 * 60000; n.read = i > 0; });
+  updateNotifBadge();
+  renderNotifDropdown();
+  renderNotifModal();
 }
-
-document.getElementById('view-all-notifs').addEventListener('click', (e) => {
-  e.preventDefault();
-  e.stopPropagation();
-  unreadNotifs = 0;
-  document.getElementById('notif-count').classList.add('d-none');
-  document.getElementById('notif-list-container').innerHTML = `
-    <div class="text-center py-4 text-muted" id="no-notifs-msg" style="font-size: 0.8rem;">
-      <i class="bi bi-bell-slash d-block mb-1" style="font-size: 1.2rem; color: var(--slate-light);"></i>
-      No active alerts
-    </div>`;
-});
