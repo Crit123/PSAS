@@ -24,7 +24,7 @@ $page_title = "Security Dashboard | PSAS";
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
   <!-- Dashboard Styles -->
-  <link rel="stylesheet" href="../includes/css/dashboard.css">
+  <link rel="stylesheet" href="../includes/css/staff-dashboard.css">
   <style>
     /* Hard override: nullify any .stat-card border rules from shared style.css */
     .stat-card,
@@ -65,8 +65,14 @@ $page_title = "Security Dashboard | PSAS";
   </div>
 
   <div class="nav-actions">
+    <!-- Real-time clock -->
+    <div class="nav-clock d-none d-md-flex">
+      <span class="nav-clock-time" id="navClockTime">--:--:-- --</span>
+      <span class="nav-clock-date d-none d-lg-block" id="navClockDate">Loading…</span>
+    </div>
+
     <!-- Live shift indicator -->
-    <div class="shift-status d-none d-md-flex">
+    <div class="shift-status d-none d-lg-flex">
       <span class="live-dot"></span>
       ON SHIFT
     </div>
@@ -110,18 +116,55 @@ $page_title = "Security Dashboard | PSAS";
 
     <!-- Staff profile -->
     <div class="dropdown">
-      <div class="staff-profile" data-bs-toggle="dropdown" aria-expanded="false">
+      <button type="button" class="staff-profile" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true" aria-label="Staff profile menu">
         <div class="text-end d-none d-md-block">
-          <div style="font-size: 0.82rem; font-weight: 700;">Officer Reyes</div>
-          <div style="font-size: 0.65rem; color: rgba(255,255,255,0.6); letter-spacing: 0.04em;">ID: SEC-2024</div>
+          <div class="staff-name">Officer Reyes</div>
+          <div class="staff-id-label">ID: SEC-2024</div>
         </div>
         <div class="staff-avatar">R</div>
+        <i class="bi bi-chevron-down profile-chevron d-none d-md-inline"></i>
+      </button>
+      <div class="dropdown-menu dropdown-menu-end border-0 profile-dropdown">
+
+        <div class="profile-dropdown-header">
+          <div class="staff-avatar lg">R</div>
+          <div>
+            <div class="profile-name">Officer Reyes</div>
+            <div class="profile-role">Security Officer</div>
+            <div class="profile-id">ID: SEC-2024</div>
+          </div>
+        </div>
+
+        <a class="profile-dropdown-item" href="staff-settings.php">
+          <i class="bi bi-gear"></i>
+          <div>
+            <div class="profile-item-title">Account Settings</div>
+            <div class="profile-item-desc">Manage your profile and preferences</div>
+          </div>
+        </a>
+
+        <div class="profile-dropdown-divider"></div>
+
+        <div class="profile-shift-block">
+          <div class="profile-shift-label">Current Shift</div>
+          <div class="profile-shift-status">
+            <span class="shift-dot on"></span>
+            <span>ON SHIFT</span>
+          </div>
+          <div class="profile-shift-location">Gate 1 Checkpoint</div>
+        </div>
+
+        <div class="profile-dropdown-divider"></div>
+
+        <button type="button" class="profile-dropdown-item danger" id="btn-logout">
+          <i class="bi bi-box-arrow-right"></i>
+          <div>
+            <div class="profile-item-title">End Shift &amp; Logout</div>
+            <div class="profile-item-desc">End your current staff session</div>
+          </div>
+        </button>
+
       </div>
-      <ul class="dropdown-menu dropdown-menu-end border-0 shadow-sm" style="border-radius: var(--radius-md); margin-top: 0.5rem;">
-        <li><a class="dropdown-item" href="settings.php" style="font-size: 0.85rem;"><i class="bi bi-gear me-2"></i>Settings</a></li>
-        <li><hr class="dropdown-divider"></li>
-        <li><a class="dropdown-item text-danger" href="#" style="font-size: 0.85rem;"><i class="bi bi-box-arrow-right me-2"></i>End Shift &amp; Logout</a></li>
-      </ul>
     </div>
   </div>
 </nav>
@@ -175,8 +218,13 @@ $page_title = "Security Dashboard | PSAS";
     <div class="col-lg-5">
       <div class="psas-card m-0" style="height: 100%;">
         <div class="d-flex justify-content-between align-items-center mb-3">
-          <h3 class="card-title-sm m-0"><i class="bi bi-upc-scan"></i> Live Scanner</h3>
+          <h3 class="card-title-sm m-0"><i class="bi bi-upc-scan"></i> Entry / Exit Scanner</h3>
           <span class="status-chip live" id="scannerLiveChip"><i class="bi bi-broadcast-pin"></i> Active</span>
+        </div>
+        <div class="rfid-reader-status" id="rfidReaderStatus">
+          <span class="rfid-reader-dot"></span>
+          <span>RFID Reader</span>
+          <strong id="rfidReaderStatusText">Ready</strong>
         </div>
 
         <!-- Shown only when a required scanner component is offline -->
@@ -189,7 +237,7 @@ $page_title = "Security Dashboard | PSAS";
         </div>
 
         <!-- The Scanner Terminal -->
-        <div class="scanner-box">
+        <div class="scanner-box" id="scannerBox">
           <div style="font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--slate); margin-bottom: 0.875rem;">RFID / QR / BARCODE</div>
           <label for="rfid-input" class="visually-hidden">RFID Input</label>
           <input type="text" id="rfid-input" class="rfid-input mb-2" placeholder="SCAN OR ENTER UID" autocomplete="off" autofocus spellcheck="false">
@@ -198,6 +246,12 @@ $page_title = "Security Dashboard | PSAS";
           <button id="btn-nfc" class="btn btn-sm btn-outline-secondary mt-3 mx-auto d-flex align-items-center gap-1" style="font-size: 0.75rem; border-radius: var(--radius-sm);">
             <i class="bi bi-phone"></i> Simulate NFC Tap
           </button>
+        </div>
+
+        <!-- Workflow stepper — shown while an automatic scan is being processed -->
+        <div class="workflow-stepper" id="workflowStepper">
+          <div class="workflow-spinner"></div>
+          <span id="workflowStepperText">Waiting for RFID…</span>
         </div>
 
         <!-- Scan Result Card — three states: hidden / valid / invalid -->
@@ -223,10 +277,34 @@ $page_title = "Security Dashboard | PSAS";
             <span id="res-status-text" style="color: #15803D;">Permit Valid — Ready</span>
           </div>
 
+          <div class="res-slot-line" id="res-slot-line">
+            <i class="bi bi-geo-alt-fill"></i>
+            <span id="res-slot-label">Assigned Slot</span>
+            <strong id="res-slot-value">—</strong>
+          </div>
+
           <div class="d-flex gap-2 mt-1">
             <button onclick="approveScan()" class="btn-psas-primary flex-grow-1"><i class="bi bi-check2-circle"></i> Approve</button>
             <button onclick="denyScan()" class="btn-psas-danger flex-grow-1"><i class="bi bi-x-circle"></i> Deny</button>
           </div>
+        </div>
+
+        <!-- Latest Parking Assignment — persists after the scan card resets so
+             staff always have a "guide the driver to ___" reference on screen -->
+        <div class="latest-assign-panel" id="latestAssignmentPanel">
+          <div class="latest-assign-header">
+            <i class="bi bi-geo-alt-fill"></i> Latest Parking Assignment
+          </div>
+          <div class="latest-assign-body">
+            <div class="latest-assign-plate">
+              <span class="plate-badge" id="latestAssignPlate">—</span>
+            </div>
+            <div class="latest-assign-slot">
+              <span class="latest-assign-slot-id" id="latestAssignSlot">—</span>
+              <span class="latest-assign-zone" id="latestAssignZone">Zone —</span>
+            </div>
+          </div>
+          <div class="latest-assign-guide" id="latestAssignGuide">Guide the driver to the assigned space.</div>
         </div>
       </div>
     </div>
@@ -259,6 +337,46 @@ $page_title = "Security Dashboard | PSAS";
     </div>
   </div>
 
+  <!-- Live Parking Status — sensor-driven, per-slot view -->
+  <div class="psas-card m-0 mb-4">
+    <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-3">
+      <div>
+        <h3 class="card-title-sm m-0">
+          <i class="bi bi-grid-3x3-gap-fill"></i> Live Parking Status
+          <span class="demo-tag">Simulated sensor data</span>
+        </h3>
+        <div style="font-size: 0.75rem; color: var(--slate); margin-top: 3px;" id="slotTotalLabel">Per-slot status from parking sensors</div>
+      </div>
+
+      <div class="parking-filter-control" id="slotFilterBar" role="tablist" aria-label="Filter parking spaces by status">
+        <button type="button" class="parking-filter-option active" data-filter="all" role="tab" aria-selected="true">
+          All <span class="parking-filter-count" data-count="all">0</span>
+        </button>
+        <button type="button" class="parking-filter-option" data-filter="available" role="tab" aria-selected="false">
+          Available <span class="parking-filter-count" data-count="available">0</span>
+        </button>
+        <button type="button" class="parking-filter-option" data-filter="occupied" role="tab" aria-selected="false">
+          Occupied <span class="parking-filter-count" data-count="occupied">0</span>
+        </button>
+        <button type="button" class="parking-filter-option" data-filter="reserved" role="tab" aria-selected="false">
+          Reserved <span class="parking-filter-count" data-count="reserved">0</span>
+        </button>
+        <button type="button" class="parking-filter-option" data-filter="unknown" role="tab" aria-selected="false">
+          Unknown <span class="parking-filter-count" data-count="unknown">0</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="slot-legend">
+      <span><span class="legend-dot available"></span> Available</span>
+      <span><span class="legend-dot occupied"></span> Occupied</span>
+      <span><span class="legend-dot reserved"></span> Reserved</span>
+      <span><span class="legend-dot unknown"></span> Unknown — Sensor Offline</span>
+    </div>
+
+    <div id="slotZonesContainer"><!-- populated by renderSlotGrid() --></div>
+  </div>
+
   <!-- Activity Log -->
   <div class="psas-card m-0">
     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -277,19 +395,19 @@ $page_title = "Security Dashboard | PSAS";
         <thead>
           <tr>
             <th>Time</th>
-            <th>Plate No.</th>
+            <th>Plate No. / Component</th>
             <th>Driver</th>
-            <th>Role</th>
-            <th>Action</th>
-            <th>Result</th>
+            <th>Parking Slot</th>
+            <th>Event</th>
+            <th>Description</th>
           </tr>
         </thead>
         <tbody id="log-tbody">
           <tr class="empty-state-row" id="log-empty-state">
             <td colspan="6">
               <i class="bi bi-arrow-down-right-circle empty-icon"></i>
-              <span class="empty-label">No scans logged yet this shift</span>
-              <span class="empty-hint">Entries and exits will appear here as you scan</span>
+              <span class="empty-label">No activity yet this shift</span>
+              <span class="empty-hint">Entries, exits, and hardware events will appear here</span>
             </td>
           </tr>
         </tbody>
@@ -326,13 +444,9 @@ $page_title = "Security Dashboard | PSAS";
           </div>
           <select id="modal-log-filter-action" style="border: var(--border); border-radius: var(--radius-sm); padding: 0.45rem 0.75rem; font-family: var(--font); font-size: 0.82rem; color: var(--text-main); outline: none;">
             <option value="">All Actions</option>
-            <option value="entry">Entry</option>
-            <option value="exit">Exit</option>
-          </select>
-          <select id="modal-log-filter-result" style="border: var(--border); border-radius: var(--radius-sm); padding: 0.45rem 0.75rem; font-family: var(--font); font-size: 0.82rem; color: var(--text-main); outline: none;">
-            <option value="">All Results</option>
-            <option value="approved">Approved</option>
-            <option value="denied">Denied</option>
+            <option value="entry">Vehicle Entry</option>
+            <option value="exit">Vehicle Exit</option>
+            <option value="hardware_failure">Hardware Failure</option>
           </select>
         </div>
 
@@ -343,11 +457,11 @@ $page_title = "Security Dashboard | PSAS";
               <tr>
                 <th style="position: sticky; top: 0; z-index: 10; background: var(--white);">#</th>
                 <th style="position: sticky; top: 0; z-index: 10; background: var(--white);">Time</th>
-                <th style="position: sticky; top: 0; z-index: 10; background: var(--white);">Plate No.</th>
+                <th style="position: sticky; top: 0; z-index: 10; background: var(--white);">Plate No. / Component</th>
                 <th style="position: sticky; top: 0; z-index: 10; background: var(--white);">Driver</th>
-                <th style="position: sticky; top: 0; z-index: 10; background: var(--white);">Role</th>
-                <th style="position: sticky; top: 0; z-index: 10; background: var(--white);">Action</th>
-                <th style="position: sticky; top: 0; z-index: 10; background: var(--white);">Result</th>
+                <th style="position: sticky; top: 0; z-index: 10; background: var(--white);">Parking Slot</th>
+                <th style="position: sticky; top: 0; z-index: 10; background: var(--white);">Event</th>
+                <th style="position: sticky; top: 0; z-index: 10; background: var(--white);">Description</th>
               </tr>
             </thead>
             <tbody id="modal-log-tbody">
@@ -355,12 +469,15 @@ $page_title = "Security Dashboard | PSAS";
                 <td colspan="7">
                   <i class="bi bi-arrow-down-right-circle empty-icon"></i>
                   <span class="empty-label">No activity yet this shift</span>
-                  <span class="empty-hint">Entries and exits will appear here as you scan</span>
+                  <span class="empty-hint">Entries, exits, and hardware events will appear here</span>
                 </td>
               </tr>
             </tbody>
           </table>
         </div>
+
+        <!-- Pagination — max 10 records/page, rebuilt on every render -->
+        <div class="log-pagination-bar" id="modal-log-pagination"></div>
       </div>
 
       <div class="modal-footer" style="border-top: 1px solid var(--ice-dark); padding: 0.75rem 1.5rem; background: var(--white); justify-content: space-between;">
@@ -420,13 +537,36 @@ $page_title = "Security Dashboard | PSAS";
   </div>
 </div>
 
+<!-- ── Logout Confirmation Modal ───────────────────────────────────────────── -->
+<div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered logout-modal-dialog">
+    <div class="modal-content logout-modal-content">
+      <button type="button" class="btn-close logout-modal-close" data-bs-dismiss="modal" aria-label="Close"></button>
+
+      <div class="logout-modal-body">
+        <div class="logout-modal-icon"><i class="bi bi-box-arrow-right"></i></div>
+        <h5 class="logout-modal-title" id="logoutModalLabel">End Shift &amp; Logout?</h5>
+        <p class="logout-modal-message">You're about to end your current staff session.</p>
+        <p class="logout-modal-submessage">You can sign in again when you're ready to continue.</p>
+      </div>
+
+      <div class="logout-modal-footer">
+        <button type="button" class="btn-psas-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn-psas-danger" id="btn-confirm-logout">
+          <i class="bi bi-box-arrow-right"></i> End Shift &amp; Logout
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Toast Container -->
 <div class="toast-container" id="toastContainer"></div>
 
 <!-- Bootstrap 5 JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <!-- Dashboard Logic -->
-<script src="../includes/js/dashboard.js"></script>
+<script src="../includes/js/staff-dashboard.js"></script>
 
 </body>
 </html>

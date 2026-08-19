@@ -79,6 +79,7 @@ body {
 .status-chip.exit     { background: rgba(245,158,11,0.07);   color: #92400E;       border: 1px solid rgba(245,158,11,0.25); }
 .status-chip.enabled  { background: rgba(26,127,90,0.07);    color: var(--green);  border: 1px solid rgba(26,127,90,0.2); }
 .status-chip.disabled { background: rgba(100,116,139,0.07);  color: var(--slate);  border: 1px solid rgba(100,116,139,0.18); }
+.status-chip.hardware { background: rgba(220,38,38,0.06);    color: var(--danger); border: 1px solid rgba(220,38,38,0.18); }
 .status-chip.live     { background: rgba(16,185,129,0.07);   color: #065F46;       border: 1px solid rgba(16,185,129,0.22); }
 .status-chip.faculty  { background: rgba(11,30,61,0.05);     color: var(--navy);   border: 1px solid rgba(11,30,61,0.12); }
 .status-chip.student  { background: rgba(100,116,139,0.07);  color: var(--slate);  border: 1px solid rgba(100,116,139,0.18); }
@@ -176,6 +177,95 @@ body {
 }
 .btn-psas-danger:hover { background: #B91C1C; color: var(--white); }
 
+.btn-psas-secondary {
+  background: var(--white);
+  color: var(--text-sub);
+  border: var(--border-strong);
+  border-radius: var(--radius-sm);
+  padding: 0.7rem 1.25rem;
+  font-family: var(--font);
+  font-weight: 700;
+  font-size: 0.875rem;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+.btn-psas-secondary:hover { background: var(--ice); color: var(--text-main); border-color: #CBD5E1; }
+
+/* ── Logout Confirmation Modal ───────────────────────────────────────────── */
+.logout-modal-dialog { max-width: 380px; z-index: 1080; }
+.logout-modal-content {
+  border: none !important;
+  border-radius: var(--radius-lg) !important;
+  box-shadow: var(--shadow-elevated) !important;
+  padding: 2rem 1.75rem 1.5rem;
+  position: relative;
+}
+.logout-modal-close {
+  position: absolute;
+  top: 1rem; right: 1rem;
+  font-size: 0.7rem;
+}
+.logout-modal-close:focus-visible {
+  outline: 2px solid var(--green);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+.logout-modal-body { text-align: center; padding: 0.5rem 0 1.5rem; }
+.logout-modal-icon {
+  width: 52px; height: 52px;
+  margin: 0 auto 1rem;
+  border-radius: 50%;
+  background: rgba(220,38,38,0.08);
+  color: var(--danger);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.4rem;
+}
+.logout-modal-title {
+  font-family: var(--font);
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--text-main);
+  margin: 0 0 0.5rem;
+  letter-spacing: -0.01em;
+}
+.logout-modal-message {
+  font-family: var(--font);
+  font-size: 0.88rem;
+  color: var(--text-sub);
+  margin: 0;
+  line-height: 1.5;
+}
+.logout-modal-submessage {
+  font-family: var(--font);
+  font-size: 0.8rem;
+  color: var(--slate-light);
+  margin: 0.4rem 0 0;
+  line-height: 1.45;
+}
+.logout-modal-footer {
+  display: flex;
+  gap: 0.75rem;
+}
+.logout-modal-footer .btn-psas-secondary,
+.logout-modal-footer .btn-psas-danger { flex: 1; }
+
+/* Bootstrap's default modal transform-based fade already gives a subtle
+   scale/translate feel; this trims the distance so it stays understated. */
+.logout-modal-dialog.modal-dialog-centered {
+  transition: transform 0.18s ease-out;
+}
+.modal.fade .logout-modal-dialog { transform: translateY(-12px) scale(0.98); }
+.modal.show .logout-modal-dialog { transform: translateY(0) scale(1); }
+
+@media (max-width: 420px) {
+  .logout-modal-dialog { max-width: calc(100% - 1.5rem); margin: 0.75rem auto; }
+  .logout-modal-content { padding: 1.75rem 1.25rem 1.25rem; }
+}
+
 .btn-nav-back {
   font-family: var(--font);
   font-size: 0.78rem;
@@ -192,6 +282,175 @@ body {
   gap: 0.4rem;
 }
 .btn-nav-back:hover { background: rgba(255,255,255,0.18); color: var(--white); }
+
+/* ── RFID Reader Status Line (inside scanner card) ───────────────────────── */
+.rfid-reader-status {
+  display: flex; align-items: center; gap: 0.4rem;
+  font-family: var(--font); font-size: 0.8rem; color: var(--text-sub);
+  margin-bottom: 1rem;
+}
+.rfid-reader-status strong { color: var(--green); font-weight: 700; margin-left: auto; }
+.rfid-reader-status.offline strong { color: var(--danger); }
+.rfid-reader-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
+.rfid-reader-status.offline .rfid-reader-dot { background: var(--danger); }
+
+/* ── Workflow Stepper ─────────────────────────────────────────────────────── */
+.workflow-stepper {
+  display: none;
+  align-items: center; gap: 0.7rem;
+  margin-top: 1.25rem;
+  padding: 0.875rem 1rem;
+  background: var(--ice);
+  border: 1px solid var(--ice-dark);
+  border-radius: var(--radius-md);
+  font-family: var(--font);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--navy);
+}
+.workflow-stepper.show { display: flex; animation: fadeIn 0.2s ease; }
+.workflow-spinner {
+  width: 16px; height: 16px; flex-shrink: 0;
+  border: 2px solid rgba(11,30,61,0.15);
+  border-top-color: var(--navy);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Assigned/Current Slot line in scan result ───────────────────────────── */
+.res-slot-line {
+  display: none;
+  align-items: center; gap: 0.45rem;
+  font-family: var(--font); font-size: 0.83rem; color: var(--text-sub);
+  margin-bottom: 1rem;
+}
+.res-slot-line.show { display: flex; }
+.res-slot-line i { color: var(--slate); font-size: 0.9rem; }
+.res-slot-line strong { color: var(--navy); font-weight: 700; margin-left: auto; font-family: var(--font-mono); letter-spacing: 0.04em; }
+
+/* ── Live Parking Status: filters + legend ───────────────────────────────── */
+.demo-tag {
+  display: inline-flex; align-items: center;
+  font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--slate-light);
+  background: var(--ice);
+  border: 1px solid var(--ice-dark);
+  padding: 0.1rem 0.4rem;
+  border-radius: 999px;
+  margin-left: 0.5rem;
+  vertical-align: middle;
+}
+
+/* Unified segmented control — one container, not floating buttons.
+   Root cause of the earlier "default square button" look: <button> elements
+   inherit -webkit-appearance:button from Bootstrap's Reboot, which reasserts
+   native OS button chrome on anything that isn't a Bootstrap .btn. Resetting
+   appearance explicitly (below) is what actually fixes it — background/
+   border-radius alone aren't enough once that's forced back on. */
+.parking-filter-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  background: var(--ice);
+  border: 1px solid var(--ice-dark);
+  border-radius: var(--radius-md);
+  padding: 3px;
+  max-width: 100%;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.parking-filter-control::-webkit-scrollbar { display: none; }
+
+.parking-filter-option {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  border: none;
+  outline: none;
+  box-shadow: none;
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-shrink: 0;
+  font-family: var(--font);
+  font-size: 0.8rem;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--slate);
+  padding: 0.42rem 0.8rem;
+  border-radius: calc(var(--radius-md) - 3px);
+  cursor: pointer;
+  transition: var(--transition);
+  white-space: nowrap;
+}
+.parking-filter-option:hover { color: var(--navy); background: rgba(11,30,61,0.05); }
+.parking-filter-option:focus-visible {
+  outline: 2px solid var(--green);
+  outline-offset: 1px;
+}
+.parking-filter-option.active {
+  background: var(--navy);
+  color: var(--white);
+  font-weight: 700;
+}
+.parking-filter-option.active:hover { background: var(--navy); color: var(--white); }
+
+.parking-filter-count {
+  font-size: 0.66rem;
+  font-weight: 700;
+  color: var(--slate-light);
+  background: rgba(100,116,139,0.12);
+  padding: 0.05rem 0.4rem;
+  border-radius: 999px;
+  line-height: 1.4;
+}
+.parking-filter-option.active .parking-filter-count {
+  color: rgba(255,255,255,0.9);
+  background: rgba(255,255,255,0.16);
+}
+
+@media (max-width: 480px) {
+  .parking-filter-control { width: 100%; justify-content: flex-start; }
+}
+
+.slot-zone-empty {
+  text-align: center;
+  padding: 2.5rem 1rem;
+  font-family: var(--font);
+}
+.slot-zone-empty i { font-size: 1.4rem; color: var(--slate-light); display: block; margin-bottom: 0.6rem; }
+.slot-zone-empty strong { display: block; font-size: 0.88rem; color: var(--text-main); margin-bottom: 0.2rem; }
+.slot-zone-empty span { font-size: 0.8rem; color: var(--slate); }
+
+.slot-legend {
+  display: flex; gap: 1.1rem; flex-wrap: wrap;
+  font-family: var(--font); font-size: 0.75rem; color: var(--slate); font-weight: 600;
+  padding-bottom: 1rem; margin-bottom: 1rem; border-bottom: 1px solid var(--ice-dark);
+}
+.slot-legend span { display: inline-flex; align-items: center; gap: 0.35rem; }
+.legend-dot { width: 9px; height: 9px; border-radius: 2px; flex-shrink: 0; }
+.legend-dot.available { background: var(--white); border: 1.5px solid #CBD5E1; }
+.legend-dot.occupied  { background: rgba(26,127,90,0.5); border: 1.5px solid var(--green); }
+.legend-dot.reserved  { background: rgba(245,158,11,0.4); border: 1.5px solid var(--amber); }
+.legend-dot.unknown   { background: repeating-linear-gradient(45deg, #CBD5E1, #CBD5E1 2px, #F1F5F9 2px, #F1F5F9 4px); border: 1.5px solid var(--slate-light); }
+
+.slot-zone-block { margin-bottom: 1.25rem; }
+.slot-zone-block:last-child { margin-bottom: 0; }
+.slot-zone-title {
+  font-family: var(--font); font-size: 0.78rem; font-weight: 700;
+  color: var(--navy); text-transform: uppercase; letter-spacing: 0.06em;
+  margin-bottom: 0.6rem;
+}
+
+/* Unknown / sensor-offline slot — visually distinct from "available" */
+.p-stall.unknown {
+  background: repeating-linear-gradient(45deg, #F1F5F9, #F1F5F9 4px, #E8EDF5 4px, #E8EDF5 8px);
+  border-color: var(--slate-light);
+  color: var(--slate);
+}
+.p-stall.unknown i { font-size: 0.75rem; }
 
 /* ── Navbar ──────────────────────────────────────────────────────────────── */
 .dashboard-navbar {
@@ -237,6 +496,29 @@ body {
 }
 
 .nav-actions { display: flex; align-items: center; gap: 1.25rem; }
+
+/* ── Real-time Clock ─────────────────────────────────────────────────────── */
+.nav-clock {
+  flex-direction: column;
+  align-items: flex-end;
+  line-height: 1.25;
+  padding-right: 0.25rem;
+}
+.nav-clock-time {
+  font-family: var(--font);
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--white);
+  letter-spacing: 0.01em;
+  font-variant-numeric: tabular-nums;
+}
+.nav-clock-date {
+  font-family: var(--font);
+  font-size: 0.66rem;
+  font-weight: 500;
+  color: var(--slate-light);
+  letter-spacing: 0.02em;
+}
 
 .shift-status {
   display: flex; align-items: center; gap: 0.4rem;
@@ -454,7 +736,22 @@ body {
 }
 .notif-badge.d-none { display: none !important; }
 
-.staff-profile { display: flex; align-items: center; gap: 0.6rem; cursor: pointer; }
+.staff-profile {
+  display: flex; align-items: center; gap: 0.6rem;
+  cursor: pointer;
+  background: none; border: none; padding: 0.25rem 0.35rem;
+  border-radius: var(--radius-sm);
+  transition: var(--transition);
+}
+.staff-profile:hover { background: rgba(255,255,255,0.06); }
+.staff-name { font-family: var(--font); font-size: 0.82rem; font-weight: 700; color: var(--white); }
+.staff-id-label { font-family: var(--font); font-size: 0.65rem; color: rgba(255,255,255,0.6); letter-spacing: 0.04em; }
+.profile-chevron {
+  font-size: 0.65rem; color: rgba(255,255,255,0.5);
+  transition: transform 0.18s ease;
+}
+.staff-profile[aria-expanded="true"] .profile-chevron { transform: rotate(180deg); }
+
 .staff-avatar {
   width: 32px; height: 32px;
   border-radius: 50%;
@@ -464,6 +761,7 @@ body {
   font-weight: 700; font-size: 0.8rem;
   color: var(--white);
   border: 1px solid rgba(255,255,255,0.12);
+  flex-shrink: 0;
 }
 .staff-avatar.lg {
   width: 72px; height: 72px;
@@ -471,6 +769,65 @@ body {
   background: var(--green-light);
   border: none;
 }
+
+/* ── Profile Dropdown ────────────────────────────────────────────────────── */
+.profile-dropdown {
+  width: 300px; min-width: 300px;
+  border-radius: var(--radius-md);
+  padding: 0;
+  border: 1px solid #E2E8F0 !important;
+  box-shadow: var(--shadow-elevated) !important;
+  margin-top: 0.6rem !important;
+  overflow: hidden;
+}
+.profile-dropdown-header {
+  display: flex; align-items: center; gap: 0.8rem;
+  padding: 1.1rem 1.1rem 1rem;
+  background: var(--ice);
+}
+.profile-dropdown-header .staff-avatar {
+  width: 46px; height: 46px; font-size: 1.05rem;
+  background: var(--navy); border: none;
+}
+.profile-name { font-family: var(--font); font-size: 0.94rem; font-weight: 700; color: var(--text-main); }
+.profile-role { font-family: var(--font); font-size: 0.78rem; color: var(--text-sub); font-weight: 500; margin-top: 1px; }
+.profile-id   { font-family: var(--font); font-size: 0.72rem; color: var(--slate-light); margin-top: 2px; letter-spacing: 0.02em; }
+
+.profile-dropdown-divider { height: 1px; background: var(--ice-dark); margin: 0; }
+
+.profile-dropdown-item {
+  display: flex; align-items: flex-start; gap: 0.7rem;
+  width: 100%;
+  padding: 0.85rem 1.1rem;
+  background: none; border: none; text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.profile-dropdown-item:hover { background: #FAFBFC; }
+.profile-dropdown-item i { font-size: 1rem; color: var(--slate); margin-top: 0.1rem; flex-shrink: 0; }
+.profile-item-title { font-family: var(--font); font-size: 0.85rem; font-weight: 600; color: var(--text-main); }
+.profile-item-desc  { font-family: var(--font); font-size: 0.75rem; color: var(--slate); margin-top: 0.1rem; line-height: 1.35; }
+
+.profile-dropdown-item.danger i { color: var(--danger); }
+.profile-dropdown-item.danger .profile-item-title { color: var(--danger); }
+.profile-dropdown-item.danger:hover { background: #FEF2F2; }
+
+.profile-shift-block { padding: 0.85rem 1.1rem; }
+.profile-shift-label {
+  font-family: var(--font); font-size: 0.68rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.07em; color: var(--slate);
+  margin-bottom: 0.45rem;
+}
+.profile-shift-status {
+  display: flex; align-items: center; gap: 0.4rem;
+  font-family: var(--font); font-size: 0.85rem; font-weight: 700; color: var(--text-main);
+}
+.shift-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.shift-dot.on      { background: var(--green); box-shadow: 0 0 0 3px rgba(26,127,90,0.15); }
+.shift-dot.warning { background: var(--amber); box-shadow: 0 0 0 3px rgba(245,158,11,0.15); }
+.shift-dot.off     { background: var(--slate-light); box-shadow: 0 0 0 3px rgba(148,163,184,0.15); }
+.profile-shift-location { font-family: var(--font); font-size: 0.78rem; color: var(--slate); margin-top: 0.25rem; margin-left: 1.2rem; }
 
 /* ── Stat Cards ──────────────────────────────────────────────────────────── */
 /* Clean minimal: no borders anywhere. Color lives in the number. */
@@ -907,4 +1264,77 @@ body {
   .settings-tab.active { border-left-color: transparent; border-bottom-color: var(--green); }
   .read-only-item { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
   .read-only-val { text-align: left; }
+}
+/* ── Latest Parking Assignment panel (Entry/Exit scanner card) ──────────────
+   Persists after the transient scan-result card resets, so staff always have
+   a "guide the driver to ___" reference visible during a shift. ─────────── */
+.latest-assign-panel {
+  display: none;
+  margin-top: 1rem;
+  padding: 0.9rem 1rem;
+  background: var(--white);
+  border: 1px solid var(--ice-dark);
+  border-left: 3px solid var(--green);
+  border-radius: var(--radius-md);
+  font-family: var(--font);
+}
+.latest-assign-panel.show { display: block; animation: fadeIn 0.2s ease; }
+.latest-assign-panel.released { border-left-color: var(--slate-light); }
+.latest-assign-header {
+  display: flex; align-items: center; gap: 0.4rem;
+  font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em;
+  color: var(--slate); margin-bottom: 0.6rem;
+}
+.latest-assign-header i { color: var(--green); }
+.latest-assign-panel.released .latest-assign-header i { color: var(--slate-light); }
+.latest-assign-body {
+  display: flex; align-items: center; justify-content: space-between; gap: 0.75rem;
+  margin-bottom: 0.6rem;
+}
+.latest-assign-slot { text-align: right; }
+.latest-assign-slot-id {
+  display: block;
+  font-family: var(--font-mono); font-weight: 700; font-size: 1.1rem;
+  color: var(--navy); letter-spacing: 0.03em;
+}
+.latest-assign-zone { display: block; font-size: 0.7rem; color: var(--slate); margin-top: 1px; }
+.latest-assign-guide {
+  font-size: 0.8rem; font-weight: 600; color: var(--green);
+  padding-top: 0.6rem; border-top: 1px dashed var(--ice-dark);
+}
+.latest-assign-panel.released .latest-assign-guide { color: var(--slate); }
+
+/* ── Activity Log pagination bar (All Logs modal) ────────────────────────── */
+.log-pagination-bar {
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.6rem;
+  padding: 0.75rem 1.5rem;
+  border-top: 1px solid var(--ice-dark);
+  background: var(--white);
+  font-family: var(--font);
+}
+.pagination-range { font-size: 0.75rem; color: var(--slate); font-weight: 600; }
+.pagination-controls { display: flex; align-items: center; gap: 0.4rem; }
+.pagination-pages { display: flex; align-items: center; gap: 0.2rem; }
+.pagination-nav, .pagination-page {
+  border: var(--border);
+  background: var(--white);
+  color: var(--text-main);
+  font-family: var(--font);
+  font-size: 0.78rem;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  padding: 0.35rem 0.65rem;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+.pagination-nav:hover:not(:disabled), .pagination-page:hover:not(.active) {
+  border-color: var(--green); color: var(--green);
+}
+.pagination-nav:disabled { opacity: 0.4; cursor: not-allowed; }
+.pagination-page { min-width: 30px; text-align: center; }
+.pagination-page.active { background: var(--green); border-color: var(--green); color: var(--white); }
+.pagination-ellipsis { color: var(--slate-light); padding: 0 0.25rem; font-size: 0.78rem; }
+
+@media (max-width: 576px) {
+  .log-pagination-bar { flex-direction: column; align-items: flex-start; }
 }

@@ -1,0 +1,451 @@
+/* ==========================================================================
+   PSAS ADMIN — Dashboard-specific Stylesheet
+   Design tokens here are shared by ALL Admin pages (imported alongside
+   sidebar.css). Component styles below the shell are used by the Admin
+   Main Dashboard; other Admin pages will add their own page-specific rules
+   the same way, without touching the sidebar.
+   ========================================================================== */
+
+@import url("sidebar.css");
+
+:root {
+  --navy:        #0B1E3D;
+  --navy-light:  #1D3A63;
+  --green:       #1A7F5A;
+  --green-light: #22A370;
+  --ice:         #F4F6FB;
+  --ice-dark:    #E8EDF5;
+  --slate:       #64748B;
+  --slate-light: #94A3B8;
+  --amber:       #F59E0B;
+  --danger:      #DC2626;
+  --white:       #FFFFFF;
+  --text-main:   #0F172A;
+  --text-sub:    #475569;
+
+  --font:      'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', 'IBM Plex Mono', monospace;
+
+  --border:        1px solid #E2E8F0;
+  --border-strong: 1px solid #CBD5E1;
+
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+
+  --shadow-card:     0 1px 4px rgba(11,30,61,0.07), 0 4px 12px rgba(11,30,61,0.04);
+  --shadow-elevated: 0 4px 24px rgba(11,30,61,0.13);
+  --transition:      0.18s ease;
+
+  --sidebar-w:            248px;
+  --sidebar-w-collapsed:  72px;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  font-family: var(--font);
+  background: var(--ice);
+  color: var(--text-main);
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+.plate-badge, .log-ts, .mono { font-family: var(--font-mono) !important; }
+
+/* ── App Shell (shared layout used by every Admin page) ──────────────── */
+.admin-shell { display: flex; min-height: 100vh; }
+.admin-main { margin-left: var(--sidebar-w); flex: 1; min-width: 0; display: flex; flex-direction: column; }
+
+.admin-topbar {
+  background: var(--white);
+  border-bottom: var(--border);
+  padding: 0.85rem 1.5rem;
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+  position: sticky; top: 0; z-index: 1020;
+}
+.topbar-title { font-weight: 800; font-size: 1.05rem; color: var(--navy); margin: 0; letter-spacing: -0.01em; }
+.topbar-sub { font-size: 0.75rem; color: var(--slate); margin-top: 1px; }
+.topbar-actions { display: flex; align-items: center; gap: 0.9rem; }
+
+.sidebar-toggle-btn {
+  display: none;
+  background: none; border: var(--border); border-radius: var(--radius-sm);
+  width: 36px; height: 36px; align-items: center; justify-content: center;
+  color: var(--navy); font-size: 1.1rem;
+  cursor: pointer;
+}
+
+/* ── Topbar real-time clock ───────────────────────────────────────────── */
+/* Matches Staff's .nav-clock-time / .nav-clock-date exactly (font family,
+   weight, size, letter-spacing, tabular numerals, date verbosity) so the
+   clock reads as the same component on both sides of PSAS — only the
+   color adapts, since Admin's topbar is light and Staff's navbar is dark.
+   Previously this used --font-mono (JetBrains Mono) with an abbreviated
+   date; Staff uses --font (Inter) with tabular-nums and a fully spelled
+   out weekday/month. That mismatch is fixed here — keep these two rules
+   as the single source of truth for the clock's look on Admin. */
+.topbar-clock { display: flex; flex-direction: column; align-items: flex-end; line-height: 1.25; padding-right: 0.25rem; }
+.topbar-clock-time {
+  font-family: var(--font);
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--navy);
+  letter-spacing: 0.01em;
+  font-variant-numeric: tabular-nums;
+}
+.topbar-clock-date {
+  font-family: var(--font);
+  font-size: 0.66rem;
+  font-weight: 500;
+  color: var(--slate);
+  letter-spacing: 0.02em;
+}
+
+.sys-status-btn, .notif-btn {
+  background: var(--ice); border: var(--border); border-radius: var(--radius-sm);
+  padding: 0.4rem 0.7rem; font-size: 0.78rem; font-weight: 700; color: var(--text-main);
+  display: flex; align-items: center; gap: 0.4rem;
+  cursor: pointer;
+}
+.notif-btn { width: 36px; height: 36px; justify-content: center; position: relative; padding: 0; }
+.notif-badge {
+  position: absolute; top: -4px; right: -4px; background: var(--danger); color: var(--white);
+  font-size: 0.62rem; font-weight: 700; border-radius: 999px; min-width: 16px; height: 16px;
+  display: flex; align-items: center; justify-content: center; padding: 0 3px;
+}
+.sys-status-dot, .notif-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green-light); flex-shrink: 0; }
+.sys-status-dot.warn { background: var(--amber); }
+.sys-status-dot.down { background: var(--danger); }
+
+.admin-profile { display: flex; align-items: center; gap: 0.6rem; background: none; border: none; padding: 0; cursor: pointer; }
+.admin-avatar {
+  width: 34px; height: 34px; border-radius: 50%; background: var(--navy-light); color: var(--white);
+  display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.85rem; flex-shrink: 0;
+}
+.admin-name { font-size: 0.8rem; font-weight: 700; color: var(--text-main); line-height: 1.1; text-align: left; }
+.admin-role { font-size: 0.68rem; color: var(--slate); font-weight: 600; }
+
+.admin-content { padding: 1.5rem; flex: 1; }
+.admin-content > .row + .row { margin-top: 0; }
+
+/* ── Section headings (dashboard information hierarchy) ───────────────── */
+.dash-section-label {
+  font-size: 0.72rem; font-weight: 700; color: var(--slate-light);
+  text-transform: uppercase; letter-spacing: 0.1em;
+  margin: 0 0 0.75rem 2px;
+}
+
+/* ── Cards ─────────────────────────────────────────────────────────────── */
+.psas-card {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  border: none;
+  box-shadow: var(--shadow-card);
+  padding: 1.5rem;
+}
+.card-title-sm {
+  font-family: var(--font); font-size: 0.78rem; font-weight: 700; color: var(--slate);
+  text-transform: uppercase; letter-spacing: 0.08em;
+  display: flex; align-items: center; gap: 0.45rem;
+}
+.card-title-sm i { color: var(--navy); font-size: 0.95rem; }
+
+/* ── Stat cards ────────────────────────────────────────────────────────── */
+.stat-card { display: flex; align-items: center; gap: 1rem; padding: 1.25rem; min-height: 92px; }
+.stat-icon {
+  width: 44px; height: 44px; border-radius: var(--radius-sm);
+  display: flex; align-items: center; justify-content: center; font-size: 1.25rem; flex-shrink: 0;
+  background: rgba(0,0,0,0.04);
+}
+.stat-card.total     .stat-icon { color: var(--navy); }
+.stat-card.available .stat-icon { color: var(--green); }
+.stat-card.occupied  .stat-icon { color: var(--slate); }
+.stat-card.reserved  .stat-icon { color: var(--amber); }
+.stat-card.unknown   .stat-icon { color: var(--danger); }
+.stat-info h4 { font-family: var(--font); margin: 0; font-size: 1.7rem; font-weight: 800; line-height: 1; letter-spacing: -0.02em; color: var(--navy); font-variant-numeric: tabular-nums; }
+.stat-info p { margin: 0.25rem 0 0; font-size: 0.68rem; font-weight: 700; color: var(--slate); text-transform: uppercase; letter-spacing: 0.05em; }
+
+/* ── Status chips / dots ───────────────────────────────────────────────── */
+.status-chip {
+  display: inline-flex; align-items: center; gap: 0.32rem;
+  padding: 0.2rem 0.55rem; border-radius: var(--radius-sm);
+  font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+.status-chip.available { background: #ECFDF5; color: var(--green); }
+.status-chip.occupied  { background: #F1F5F9; color: var(--slate); }
+.status-chip.reserved  { background: #FFFBEB; color: #B45309; }
+.status-chip.unknown   { background: #FEF2F2; color: var(--danger); }
+.status-chip.active    { background: #ECFDF5; color: var(--green); }
+.status-chip.inactive  { background: #F1F5F9; color: var(--slate); }
+.status-chip.online    { background: #ECFDF5; color: var(--green); }
+.status-chip.offline   { background: #FEF2F2; color: var(--danger); }
+.status-chip.warning   { background: #FFFBEB; color: #B45309; }
+
+.dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+.dot.green { background: var(--green-light); }
+.dot.amber { background: var(--amber); }
+.dot.red   { background: var(--danger); }
+.dot.gray  { background: var(--slate-light); }
+
+/* ── Utilization bar (Parking Overview) ───────────────────────────────── */
+.util-bar-track { background: var(--ice-dark); border-radius: 999px; height: 10px; overflow: hidden; }
+.util-bar-fill { height: 100%; background: linear-gradient(90deg, var(--green), var(--green-light)); border-radius: 999px; transition: width 0.4s ease; }
+.util-bar-fill.warn { background: linear-gradient(90deg, #D97706, var(--amber)); }
+.util-bar-fill.crit { background: linear-gradient(90deg, #B91C1C, var(--danger)); }
+.util-bar-label { font-size: 0.8rem; color: var(--slate); font-weight: 600; }
+.util-bar-label strong { color: var(--navy); font-weight: 800; }
+
+/* ── Alerts ────────────────────────────────────────────────────────────── */
+.alert-item {
+  display: flex; gap: 0.75rem; align-items: flex-start;
+  padding: 0.75rem 0.85rem; border-radius: var(--radius-md);
+  border: var(--border); margin-bottom: 0.6rem;
+}
+.alert-item:last-child { margin-bottom: 0; }
+.alert-item.critical { background: #FEF2F2; border-color: #FECACA; }
+.alert-item.warning  { background: #FFFBEB; border-color: #FDE68A; }
+.alert-item .alert-icon { font-size: 1rem; margin-top: 1px; }
+.alert-item.critical .alert-icon { color: var(--danger); }
+.alert-item.warning .alert-icon { color: #B45309; }
+.alert-title { font-size: 0.83rem; font-weight: 700; color: var(--text-main); }
+.alert-meta { font-size: 0.72rem; color: var(--slate); margin-top: 1px; }
+
+/* ── Tables ────────────────────────────────────────────────────────────── */
+.table-psas { width: 100%; margin: 0; border-collapse: separate; border-spacing: 0; }
+.table-psas th {
+  font-size: 0.7rem; font-weight: 700; color: var(--slate); text-transform: uppercase;
+  letter-spacing: 0.06em; text-align: left; padding: 0.7rem 0.9rem; border-bottom: var(--border-strong);
+  white-space: nowrap;
+}
+.table-psas td { padding: 0.75rem 0.9rem; font-size: 0.85rem; font-weight: 500; color: var(--text-main); border-bottom: 1px solid var(--ice-dark); vertical-align: middle; }
+.table-psas tbody tr:last-child td { border-bottom: none; }
+.table-psas tbody tr:hover td { background: #FAFAFA; }
+
+/* Empty / loading / error states */
+.empty-state-row td, .state-block { text-align: center; padding: 2.5rem 1rem; color: var(--slate); }
+.state-block .state-icon { font-size: 1.8rem; color: var(--slate-light); display: block; margin-bottom: 0.5rem; }
+.state-block .state-label { font-size: 0.85rem; font-weight: 700; color: var(--text-sub); }
+.state-block .state-hint { font-size: 0.76rem; color: var(--slate); margin-top: 2px; }
+
+/* ── Buttons ───────────────────────────────────────────────────────────── */
+.btn-psas-primary, .btn-psas-secondary, .btn-psas-danger {
+  border-radius: var(--radius-sm); font-weight: 700; font-size: 0.83rem;
+  padding: 0.5rem 1rem; display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem;
+  border: none; cursor: pointer; transition: filter var(--transition), background var(--transition);
+}
+.btn-psas-primary { background: var(--green); color: var(--white); }
+.btn-psas-primary:hover { filter: brightness(1.08); }
+.btn-psas-secondary { background: var(--white); color: var(--text-main); border: var(--border-strong); }
+.btn-psas-secondary:hover { background: var(--ice); }
+.btn-psas-danger { background: var(--danger); color: var(--white); }
+.btn-psas-danger:hover { filter: brightness(1.08); }
+
+/* ── Mini tiles (movement/hardware) ───────────────────────────────────── */
+.mini-tile {
+  border: var(--border); border-radius: var(--radius-md); padding: 0.85rem;
+  display: flex; flex-direction: column; gap: 0.35rem;
+}
+.mini-tile-header { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+.mini-tile-title { font-size: 0.8rem; font-weight: 700; color: var(--text-main); }
+.mini-tile-value { font-size: 1.4rem; font-weight: 800; color: var(--navy); letter-spacing: -0.01em; font-variant-numeric: tabular-nums; }
+
+/* Demo/simulation tag reused from Staff side */
+.demo-tag {
+  display: inline-flex; align-items: center;
+  font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--slate-light); background: var(--ice); border: 1px solid var(--ice-dark);
+  padding: 0.1rem 0.4rem; border-radius: 3px; margin-left: 0.5rem;
+}
+
+.link-quiet { font-size: 0.78rem; font-weight: 700; color: var(--green); text-decoration: none; }
+.link-quiet:hover { text-decoration: underline; }
+
+/* ── Header search ─────────────────────────────────────────────────────── */
+.header-search { position: relative; flex: 1; max-width: 340px; margin: 0 1rem; }
+.header-search-icon { position: absolute; left: 0.7rem; top: 50%; transform: translateY(-50%); color: var(--slate-light); font-size: 0.85rem; pointer-events: none; }
+.header-search-input {
+  width: 100%; border: var(--border); border-radius: var(--radius-sm);
+  padding: 0.45rem 0.75rem 0.45rem 2rem; font-family: var(--font); font-size: 0.82rem;
+  color: var(--text-main); background: var(--ice); outline: none; transition: border-color var(--transition), background var(--transition);
+}
+.header-search-input:focus { background: var(--white); border-color: var(--green); }
+.header-search-results {
+  display: none; position: absolute; top: calc(100% + 6px); left: 0; right: 0;
+  background: var(--white); border-radius: var(--radius-md); border: var(--border);
+  box-shadow: var(--shadow-elevated); z-index: 1040; max-height: 360px; overflow-y: auto; padding: 0.5rem;
+}
+.header-search-results.open { display: block; }
+.search-result-block { padding: 0.55rem 0.6rem; border-bottom: 1px solid var(--ice-dark); }
+.search-result-block:last-child { border-bottom: none; }
+.search-result-label { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--slate-light); display: flex; align-items: center; gap: 0.35rem; margin-bottom: 0.3rem; }
+.search-result-main { font-size: 0.88rem; font-weight: 700; color: var(--navy); font-family: var(--font-mono); display: flex; align-items: center; gap: 0.45rem; }
+.search-result-sub { font-size: 0.75rem; color: var(--slate); margin-top: 2px; }
+.search-result-activity-row { display: flex; justify-content: space-between; font-size: 0.78rem; color: var(--text-sub); padding: 0.2rem 0; }
+.search-result-time { color: var(--slate-light); font-family: var(--font-mono); font-size: 0.72rem; }
+
+/* ── Header popovers (Notifications / System Status / Profile) ───────────── */
+.header-popover-wrap { position: relative; }
+.header-dropdown {
+  display: none; position: absolute; top: calc(100% + 10px); right: 0;
+  background: var(--white); border-radius: var(--radius-md); border: var(--border);
+  box-shadow: var(--shadow-elevated); z-index: 1040; overflow: hidden;
+}
+.header-dropdown.open { display: block; animation: dropdownIn 0.14s ease; }
+@keyframes dropdownIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+.header-dropdown-title {
+  font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em;
+  color: var(--slate); padding: 0.8rem 1rem 0.55rem;
+}
+.header-caret { font-size: 0.62rem; opacity: 0.6; margin-left: 0.15rem; }
+.header-dropdown-divider { height: 1px; background: var(--ice-dark); margin: 0.3rem 0; }
+.header-dropdown-footer-link {
+  display: block; width: 100%; text-align: center; background: none; border: none;
+  border-top: 1px solid var(--ice-dark); padding: 0.65rem; font-size: 0.78rem; font-weight: 700;
+  color: var(--green); cursor: pointer;
+}
+.header-dropdown-footer-link:hover { background: var(--ice); }
+
+/* Notifications dropdown */
+.notif-dropdown { width: 340px; }
+.notif-dropdown-list { max-height: 320px; overflow-y: auto; }
+.notif-row {
+  display: flex; align-items: flex-start; gap: 0.6rem; width: 100%; text-align: left;
+  background: none; border: none; padding: 0.6rem 1rem; cursor: pointer; transition: background var(--transition);
+}
+.notif-row:hover { background: var(--ice); }
+.notif-row.unread { background: #F0FBF6; }
+.notif-row.unread:hover { background: #E6F7EF; }
+.notif-row-dot { width: 8px; height: 8px; border-radius: 50%; margin-top: 5px; flex-shrink: 0; }
+.notif-row-dot.critical { background: var(--danger); }
+.notif-row-dot.warning { background: var(--amber); }
+.notif-row-body { display: flex; flex-direction: column; gap: 1px; }
+.notif-row-title { font-size: 0.82rem; font-weight: 700; color: var(--text-main); line-height: 1.3; }
+.notif-row-meta { font-size: 0.72rem; color: var(--slate); }
+
+/* System status dropdown */
+.sys-status-dropdown { width: 290px; }
+.sys-status-list { padding: 0 0.4rem; max-height: 260px; overflow-y: auto; }
+.sys-status-row { display: flex; align-items: center; gap: 0.55rem; padding: 0.45rem 0.6rem; border-radius: var(--radius-sm); font-size: 0.8rem; }
+.sys-status-row-name { flex: 1; color: var(--text-main); font-weight: 600; }
+.sys-status-row-state { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--slate); }
+.sys-status-summary-line { font-size: 0.76rem; font-weight: 700; padding: 0.7rem 1rem; border-top: 1px solid var(--ice-dark); }
+.sys-status-summary-line.ok { color: var(--green); }
+.sys-status-summary-line.attn { color: var(--danger); }
+.sys-status-btn.attention { border-color: rgba(220,38,38,0.35); background: #FEF2F2; color: var(--danger); }
+.sys-status-btn.attention .sys-status-dot { background: var(--danger); }
+
+/* Profile dropdown */
+.profile-dropdown { width: 210px; padding: 0.4rem; }
+.profile-dropdown-item {
+  display: flex; align-items: center; gap: 0.6rem; width: 100%; text-align: left;
+  background: none; border: none; padding: 0.55rem 0.6rem; border-radius: var(--radius-sm);
+  font-size: 0.83rem; font-weight: 600; color: var(--text-main); text-decoration: none; cursor: pointer;
+}
+.profile-dropdown-item:hover { background: var(--ice); color: var(--text-main); }
+.profile-dropdown-item i { font-size: 0.95rem; color: var(--slate); width: 18px; text-align: center; }
+.profile-dropdown-item.danger { color: var(--danger); }
+.profile-dropdown-item.danger i { color: var(--danger); }
+.profile-dropdown-item.danger:hover { background: #FEF2F2; }
+
+/* ── Shared PSAS modal chrome (Notifications / Activity / Parking drilldown) */
+.psas-modal-content { border: none; border-radius: var(--radius-lg); overflow: hidden; }
+.psas-modal-header { background: var(--navy); border-bottom: none; padding: 1rem 1.5rem; }
+.psas-modal-title { font-family: var(--font); color: var(--white); font-weight: 700; font-size: 0.95rem; margin: 0; }
+.psas-modal-eyebrow { font-size: 0.65rem; color: var(--slate-light); text-transform: uppercase; letter-spacing: 0.08em; margin-top: 2px; }
+.psas-modal-footer { border-top: 1px solid var(--ice-dark); padding: 0.75rem 1.5rem; background: var(--white); justify-content: space-between; }
+.link-quiet-btn { background: none; border: none; padding: 0; font-size: 0.8rem; font-weight: 700; color: var(--green); cursor: pointer; }
+.link-quiet-btn:hover { text-decoration: underline; }
+
+/* Notifications modal */
+.notif-modal-filter-bar { display: flex; gap: 0.4rem; padding: 0.75rem 1.5rem; border-bottom: 1px solid var(--ice-dark); overflow-x: auto; }
+.notif-modal-filter {
+  background: var(--ice); border: var(--border); border-radius: 999px; padding: 0.3rem 0.75rem;
+  font-size: 0.75rem; font-weight: 700; color: var(--slate); cursor: pointer; white-space: nowrap; transition: var(--transition);
+}
+.notif-modal-filter.active { background: var(--navy); border-color: var(--navy); color: var(--white); }
+.notif-modal-list { max-height: 55vh; overflow-y: auto; }
+.notif-modal-row { display: flex; align-items: flex-start; gap: 0.65rem; padding: 0.8rem 1.5rem; border-bottom: 1px solid var(--ice-dark); }
+.notif-modal-row.unread { background: #F0FBF6; }
+.notif-mark-read-btn {
+  margin-left: auto; background: var(--white); border: var(--border-strong); border-radius: var(--radius-sm);
+  width: 28px; height: 28px; flex-shrink: 0; color: var(--green); cursor: pointer;
+}
+.notif-mark-read-btn:hover { background: var(--ice); }
+
+/* Activity modal */
+.activity-modal-toolbar { display: flex; align-items: center; gap: 0.75rem; padding: 0.875rem 1.5rem; border-bottom: 1px solid var(--ice-dark); flex-wrap: wrap; }
+.activity-modal-filters { display: flex; gap: 0.4rem; }
+.activity-modal-filter {
+  background: var(--ice); border: var(--border); border-radius: 999px; padding: 0.3rem 0.75rem;
+  font-size: 0.75rem; font-weight: 700; color: var(--slate); cursor: pointer; white-space: nowrap; transition: var(--transition);
+}
+.activity-modal-filter.active { background: var(--navy); border-color: var(--navy); color: var(--white); }
+.activity-modal-search-wrap { position: relative; flex: 1; min-width: 180px; max-width: 260px; margin-left: auto; }
+.activity-modal-search-wrap i { position: absolute; left: 0.6rem; top: 50%; transform: translateY(-50%); color: var(--slate-light); font-size: 0.8rem; }
+.activity-modal-search-wrap input {
+  width: 100%; border: var(--border); border-radius: var(--radius-sm); padding: 0.4rem 0.7rem 0.4rem 1.9rem;
+  font-family: var(--font); font-size: 0.8rem; outline: none; color: var(--text-main);
+}
+.activity-modal-table-wrap { max-height: 50vh; overflow-y: auto; }
+.activity-modal-pagination { display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1.5rem; border-top: 1px solid var(--ice-dark); }
+.activity-modal-pagination .page-label { font-size: 0.78rem; color: var(--slate); font-weight: 600; }
+.activity-modal-pagination .btn-psas-secondary:disabled { opacity: 0.45; cursor: not-allowed; }
+
+/* ── Frontend Simulation Panel (dev/demo aid — visually subtle) ──────────── */
+.sim-panel-wrap { position: fixed; right: 1.25rem; bottom: 1.25rem; z-index: 1050; }
+.sim-panel-toggle {
+  display: flex; align-items: center; gap: 0.45rem; background: var(--navy); color: var(--white);
+  border: none; border-radius: 999px; padding: 0.55rem 1rem; font-size: 0.75rem; font-weight: 700;
+  box-shadow: var(--shadow-elevated); cursor: pointer; letter-spacing: 0.02em;
+}
+.sim-panel-toggle i { font-size: 0.85rem; }
+.sim-panel {
+  display: none; position: absolute; right: 0; bottom: calc(100% + 10px); width: 300px;
+  background: var(--white); border-radius: var(--radius-lg); border: var(--border);
+  box-shadow: var(--shadow-elevated); padding: 1rem;
+}
+.sim-panel.open { display: block; }
+.sim-panel-title { font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: var(--slate-light); margin-bottom: 0.7rem; display: flex; align-items: center; gap: 0.35rem; }
+.sim-group { margin-bottom: 0.85rem; }
+.sim-group label { display: block; font-size: 0.72rem; font-weight: 700; color: var(--text-sub); margin-bottom: 0.3rem; }
+.sim-group input, .sim-group select {
+  width: 100%; border: var(--border); border-radius: var(--radius-sm); padding: 0.4rem 0.6rem;
+  font-family: var(--font); font-size: 0.8rem; color: var(--text-main); outline: none; margin-bottom: 0.4rem;
+}
+.sim-group .sim-btn-row { display: flex; gap: 0.4rem; }
+.sim-btn { flex: 1; border-radius: var(--radius-sm); font-size: 0.76rem; font-weight: 700; padding: 0.4rem 0.5rem; border: var(--border-strong); background: var(--white); color: var(--text-main); cursor: pointer; }
+.sim-btn:hover { background: var(--ice); }
+.sim-btn.primary { background: var(--green); border-color: var(--green); color: var(--white); }
+.sim-btn.primary:hover { filter: brightness(1.08); }
+.sim-btn.danger { background: var(--white); border-color: var(--danger); color: var(--danger); }
+.sim-btn.danger:hover { background: #FEF2F2; }
+.sim-feedback { margin-top: 0.5rem; font-size: 0.75rem; font-weight: 600; padding: 0.4rem 0.6rem; border-radius: var(--radius-sm); }
+.sim-feedback.success { background: #ECFDF5; color: var(--green); }
+.sim-feedback.error { background: #FEF2F2; color: var(--danger); }
+.sim-divider { height: 1px; background: var(--ice-dark); margin: 0.75rem 0; }
+
+/* Clickable stat cards used for the parking drilldown */
+.stat-card.clickable { cursor: pointer; transition: box-shadow var(--transition), transform var(--transition); }
+.stat-card.clickable:hover { box-shadow: var(--shadow-elevated); transform: translateY(-1px); }
+
+/* ── Responsive (dashboard content only — sidebar responsiveness lives in
+   sidebar.css) ─────────────────────────────────────────────────────────── */
+@media (max-width: 991.98px) {
+  .admin-main { margin-left: 0; }
+  .admin-name, .admin-role { display: none; }
+}
+
+@media (max-width: 575.98px) {
+  .admin-content { padding: 1rem; }
+  .admin-topbar { padding: 0.7rem 1rem; }
+  .topbar-clock { display: none; }
+  .sim-panel { width: calc(100vw - 2.5rem); right: -0.5rem; }
+}
+
+@media (max-width: 767.98px) {
+  .header-search { display: none !important; }
+}
