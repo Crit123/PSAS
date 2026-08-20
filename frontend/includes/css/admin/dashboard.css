@@ -5,7 +5,7 @@
    Main Dashboard; other Admin pages will add their own page-specific rules
    the same way, without touching the sidebar.
    ========================================================================== */
-
+@import url("../admin-global.css");
 @import url("sidebar.css");
 
 :root {
@@ -251,6 +251,9 @@ body {
 }
 .mini-tile-header { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
 .mini-tile-title { font-size: 0.8rem; font-weight: 700; color: var(--text-main); }
+.mini-tile-title i { margin-right: 4px; }
+.mini-tile-title i.accent-green { color: var(--green); }
+.mini-tile-title i.accent-amber { color: var(--amber); }
 .mini-tile-value { font-size: 1.4rem; font-weight: 800; color: var(--navy); letter-spacing: -0.01em; font-variant-numeric: tabular-nums; }
 
 /* Demo/simulation tag reused from Staff side */
@@ -357,8 +360,15 @@ body {
 .psas-modal-title { font-family: var(--font); color: var(--white); font-weight: 700; font-size: 0.95rem; margin: 0; }
 .psas-modal-eyebrow { font-size: 0.65rem; color: var(--slate-light); text-transform: uppercase; letter-spacing: 0.08em; margin-top: 2px; }
 .psas-modal-footer { border-top: 1px solid var(--ice-dark); padding: 0.75rem 1.5rem; background: var(--white); justify-content: space-between; }
+.psas-modal-footer.end { justify-content: flex-end; }
 .link-quiet-btn { background: none; border: none; padding: 0; font-size: 0.8rem; font-weight: 700; color: var(--green); cursor: pointer; }
 .link-quiet-btn:hover { text-decoration: underline; }
+
+/* ── Small shared utilities (replace one-off inline styles) ───────────── */
+.helper-text { font-size: 0.78rem; color: var(--slate); }
+.helper-text.bordered-top { margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid var(--ice-dark); }
+.helper-text strong { color: var(--navy); }
+.btn-block { width: 100%; }
 
 /* Notifications modal */
 .notif-modal-filter-bar { display: flex; gap: 0.4rem; padding: 0.75rem 1.5rem; border-bottom: 1px solid var(--ice-dark); overflow-x: auto; }

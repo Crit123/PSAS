@@ -1,0 +1,11 @@
+/* ==========================================================================
+   PSAS ADMIN — Vehicle Records page-specific Stylesheet
+   Loads admin-global.css for tokens/shell/shared UI. Table, toolbar, stat
+   cards, and pagination are all reused from global as-is.
+   ========================================================================== */
+
+@import url("../admin-global.css");
+
+.duration-badge {
+  font-family: var(--font-mono); font-size: 0.76rem; color: var(--text-sub);
+}

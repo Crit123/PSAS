@@ -1,0 +1,13 @@
+/* ==========================================================================
+   PSAS ADMIN — Notifications page-specific Stylesheet
+   Loads admin-global.css for tokens/shell/shared UI. Reuses the header's
+   .notif-modal-row / .notif-mark-read-btn styling as-is so a notification
+   looks identical in the header popover, header modal, and this page.
+   Only a small padding tweak lives below since those rows were designed
+   for a full-bleed modal, not a card with its own padding.
+   ========================================================================== */
+
+@import url("../admin-global.css");
+
+#notifListBody .notif-modal-row { padding-left: 0; padding-right: 0; }
+#notifListBody .notif-modal-row:last-child { border-bottom: none; }

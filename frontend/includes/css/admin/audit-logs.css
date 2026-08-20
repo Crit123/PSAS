@@ -1,0 +1,8 @@
+/* ==========================================================================
+   PSAS ADMIN — Activity & Audit Logs page-specific Stylesheet
+   Loads admin-global.css for tokens/shell/shared UI. Stat cards, toolbar,
+   table, activity-type badges, and pagination are all reused from global
+   as-is — nothing page-specific needed yet.
+   ========================================================================== */
+
+@import url("../admin-global.css");

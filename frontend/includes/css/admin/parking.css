@@ -1,0 +1,14 @@
+/* ==========================================================================
+   PSAS ADMIN — Parking Management page-specific Stylesheet
+   Loads admin-global.css for tokens/shell/shared UI. Only rules unique to
+   this page live below (stat cards, toolbar, table, pagination all reused
+   from global as-is).
+   ========================================================================== */
+
+@import url("../admin-global.css");
+
+.zone-chip {
+  display: inline-flex; align-items: center; font-size: 0.72rem; font-weight: 700;
+  color: var(--slate); background: var(--ice); border: var(--border);
+  padding: 0.15rem 0.5rem; border-radius: var(--radius-sm);
+}

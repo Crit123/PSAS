@@ -1,0 +1,25 @@
+/* ==========================================================================
+   PSAS ADMIN — User & Account Management page-specific Stylesheet
+   Loads admin-global.css for tokens/shell/shared UI. Only rules unique to
+   this page live below.
+   ========================================================================== */
+
+@import url("../admin-global.css");
+
+/* Account identity cell (avatar + name/email stacked) */
+.account-cell { display: flex; align-items: center; gap: 0.65rem; }
+.account-avatar {
+  width: 32px; height: 32px; border-radius: 50%; background: var(--navy-light); color: var(--white);
+  display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.78rem; flex-shrink: 0;
+}
+.account-name { font-size: 0.85rem; font-weight: 700; color: var(--text-main); line-height: 1.25; }
+.account-email { font-size: 0.74rem; color: var(--slate); }
+
+/* Role badge — distinct from status-chip since role isn't a status */
+.role-badge {
+  display: inline-flex; align-items: center; font-size: 0.68rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.04em;
+  padding: 0.2rem 0.55rem; border-radius: var(--radius-sm);
+}
+.role-badge.admin { background: #EEF2FF; color: #4338CA; }
+.role-badge.staff { background: var(--ice); color: var(--slate); }

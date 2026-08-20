@@ -110,6 +110,30 @@
       { id: nextId("notif"), level: "warning", category: "hardware", title: "Sensor B-022 reporting intermittent signal", meta: "Hardware Alert", timestamp: minutesAgoIso(138), read: true, sourceHardwareId: "sensor-b022" },
     ],
     todayStats: { entries: 385, exits: 243 },
+    // FRONTEND MOCK DATA
+    // FUTURE: Replace with backend/API response — GET /api/admin/accounts
+    accounts: [
+      { id: "acc-1", name: "Admin Santos", email: "santos.admin@psas.local", role: "admin", department: "IT Operations", status: "active", lastLogin: minutesAgoIso(12) },
+      { id: "acc-2", name: "Maria Dela Cruz", email: "m.delacruz@psas.local", role: "staff", department: "Front Gate", status: "active", lastLogin: minutesAgoIso(40) },
+      { id: "acc-3", name: "Jonathan Reyes", email: "j.reyes@psas.local", role: "staff", department: "Front Gate", status: "active", lastLogin: minutesAgoIso(95) },
+      { id: "acc-4", name: "Angela Fernandez", email: "a.fernandez@psas.local", role: "staff", department: "Zone B Patrol", status: "inactive", lastLogin: minutesAgoIso(2880) },
+      { id: "acc-5", name: "Ramon Villanueva", email: "r.villanueva@psas.local", role: "staff", department: "Zone A Patrol", status: "suspended", lastLogin: minutesAgoIso(10080) },
+      { id: "acc-6", name: "Katrina Bautista", email: "k.bautista@psas.local", role: "admin", department: "IT Operations", status: "active", lastLogin: minutesAgoIso(200) },
+      { id: "acc-7", name: "Michael Torres", email: "m.torres@psas.local", role: "staff", department: "Front Gate", status: "pending", lastLogin: null },
+      { id: "acc-8", name: "Sophia Ramos", email: "s.ramos@psas.local", role: "staff", department: "Zone C Patrol", status: "active", lastLogin: minutesAgoIso(65) },
+    ],
+    // FRONTEND MOCK DATA
+    // FUTURE: Replace with backend/API response — GET /api/admin/reports/weekly-trend
+    // Used by Reports & Analytics for the entries-vs-exits trend chart.
+    weeklyTrend: [
+      { day: "Mon", entries: 312, exits: 298 },
+      { day: "Tue", entries: 340, exits: 325 },
+      { day: "Wed", entries: 298, exits: 301 },
+      { day: "Thu", entries: 355, exits: 340 },
+      { day: "Fri", entries: 401, exits: 372 },
+      { day: "Sat", entries: 289, exits: 275 },
+      { day: "Sun", entries: 385, exits: 243 },
+    ],
   };
 
   function minutesAgoIso(mins) { return new Date(Date.now() - mins * 60000).toISOString(); }
@@ -143,8 +167,41 @@
     return { offline, warning, attention, overall };
   }
 
+  // Zone-by-zone occupancy — used by Reports & Analytics' zone chart.
+  function getZoneBreakdown() {
+    const zones = {};
+    state.parkingSpaces.forEach(s => {
+      if (!zones[s.zone]) zones[s.zone] = { zone: s.zone, total: 0, occupied: 0 };
+      zones[s.zone].total += 1;
+      if (s.status === "occupied") zones[s.zone].occupied += 1;
+    });
+    return Object.values(zones).sort((a, b) => a.zone.localeCompare(b.zone));
+  }
+
+  function getWeeklyTrend() {
+    return state.weeklyTrend;
+  }
+
   function getUnreadNotificationCount() {
     return state.notifications.filter(n => !n.read).length;
+  }
+
+  function getAccountsSummary() {
+    const total = state.accounts.length;
+    const active = state.accounts.filter(a => a.status === "active").length;
+    const inactive = state.accounts.filter(a => a.status === "inactive").length;
+    const suspended = state.accounts.filter(a => a.status === "suspended").length;
+    const pending = state.accounts.filter(a => a.status === "pending").length;
+    return { total, active, inactive, suspended, pending };
+  }
+
+  // Vehicle Records reads the same PSAS.state.vehicles the dashboard/entry-
+  // exit simulation writes to — "inside" and "out" vehicles both included,
+  // newest activity first, so the page always matches Recent Activity.
+  function getVehicleRecords() {
+    return Object.values(state.vehicles)
+      .slice()
+      .sort((a, b) => new Date(b.entryTime) - new Date(a.entryTime));
   }
 
   function getAlerts() {
@@ -288,6 +345,15 @@
     if (n && !n.read) { n.read = true; emit(); }
   }
 
+  // FUTURE: Replace with backend/API response — PATCH /api/admin/accounts/:id
+  function setAccountStatus(accountId, status) {
+    const acc = state.accounts.find(a => a.id === accountId);
+    if (!acc) return { ok: false, error: "Unknown account." };
+    acc.status = status;
+    emit();
+    return { ok: true };
+  }
+
   function markAllNotificationsRead() {
     let changed = false;
     state.notifications.forEach(n => { if (!n.read) { n.read = true; changed = true; } });
@@ -315,6 +381,10 @@
     unreadNotificationCount: getUnreadNotificationCount,
     alerts: getAlerts,
     search,
+    accountsSummary: getAccountsSummary,
+    vehicleRecords: getVehicleRecords,
+    zoneBreakdown: getZoneBreakdown,
+    weeklyTrend: getWeeklyTrend,
   };
   global.PSAS.actions = {
     simulateEntry,
@@ -324,5 +394,6 @@
     markNotificationRead,
     markAllNotificationsRead,
     resetSimulation,
+    setAccountStatus,
   };
 })(window);

@@ -6,59 +6,14 @@
  * dropdown, header search, profile dropdown. Sidebar interactivity lives in
  * admin-sidebar.js; dashboard content lives in admin-dashboard.js. All three
  * read from the same PSAS.state (admin-state.js) so numbers never diverge.
+ * Shared helpers (escapeHtml, relativeTime, popover manager) come from
+ * admin-global.js's window.PSASUI — load that file before this one.
  * ============================================================================
  */
 (function () {
   "use strict";
 
-  // ── Utilities ────────────────────────────────────────────────────────────
-  function escapeHtml(str) {
-    const div = document.createElement("div");
-    div.textContent = str ?? "";
-    return div.innerHTML;
-  }
-
-  function relativeTime(iso) {
-    const diffMs = Date.now() - new Date(iso).getTime();
-    const mins = Math.round(diffMs / 60000);
-    if (mins < 1) return "Just now";
-    if (mins < 60) return `${mins}m ago`;
-    const hrs = Math.round(mins / 60);
-    if (hrs < 24) return `${hrs}h ago`;
-    return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" });
-  }
-
-  // Generic "one open overlay at a time" + outside-click + Escape-to-close
-  // manager shared by every header popover, so opening one always closes
-  // any other and nothing needs to be wired up twice.
-  const openPopovers = new Set();
-  function registerPopover(panelEl, triggerEl, onClose) {
-    function close() {
-      if (!panelEl.classList.contains("open")) return;
-      panelEl.classList.remove("open");
-      triggerEl.setAttribute("aria-expanded", "false");
-      openPopovers.delete(close);
-      if (onClose) onClose();
-    }
-    function open() {
-      openPopovers.forEach(fn => fn());
-      panelEl.classList.add("open");
-      triggerEl.setAttribute("aria-expanded", "true");
-      openPopovers.add(close);
-    }
-    function toggle(e) {
-      if (e) e.stopPropagation();
-      panelEl.classList.contains("open") ? close() : open();
-    }
-    triggerEl.addEventListener("click", toggle);
-    panelEl.addEventListener("click", e => e.stopPropagation());
-    return { open, close };
-  }
-
-  document.addEventListener("click", () => openPopovers.forEach(fn => fn()));
-  document.addEventListener("keydown", e => {
-    if (e.key === "Escape") openPopovers.forEach(fn => fn());
-  });
+  const { escapeHtml, relativeTime, registerPopover } = PSASUI;
 
   // ── Real-time clock ──────────────────────────────────────────────────────
   // Matches Staff's updateClock() exactly: same time/date formatting so both

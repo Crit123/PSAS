@@ -51,15 +51,15 @@ $sidebar_hw_badge    = $sidebar_hw_badge    ?? 1;
 $sidebar_notif_badge = $sidebar_notif_badge ?? 3;
 
 $sidebar_links = [
-  ['key' => 'dashboard',     'href' => 'admin-dashboard.php',     'icon' => 'bi-speedometer2',          'label' => 'Dashboard'],
-  ['key' => 'parking',       'href' => 'admin-parking.php',       'icon' => 'bi-grid-3x3-gap-fill',     'label' => 'Parking Management'],
-  ['key' => 'vehicles',      'href' => 'admin-vehicles.php',      'icon' => 'bi-car-front-fill',        'label' => 'Vehicle Records'],
-  ['key' => 'accounts',      'href' => 'admin-accounts.php',      'icon' => 'bi-people-fill',           'label' => 'User &amp; Account Management'],
-  ['key' => 'logs',          'href' => 'admin-logs.php',          'icon' => 'bi-list-ul',               'label' => 'Activity &amp; Audit Logs'],
-  ['key' => 'reports',       'href' => 'admin-reports.php',       'icon' => 'bi-bar-chart-fill',        'label' => 'Reports &amp; Analytics'],
-  ['key' => 'hardware',      'href' => 'admin-hardware.php',      'icon' => 'bi-hdd-network-fill',      'label' => 'Hardware Monitoring', 'badge' => $sidebar_hw_badge],
-  ['key' => 'notifications', 'href' => 'admin-notifications.php', 'icon' => 'bi-bell-fill',             'label' => 'Notifications',       'badge' => $sidebar_notif_badge],
-  ['key' => 'config',        'href' => 'admin-config.php',        'icon' => 'bi-gear-fill',             'label' => 'System Configuration'],
+  ['key' => 'dashboard',     'href' => '../admin/dashboard.php',     'icon' => 'bi-speedometer2',          'label' => 'Dashboard'],
+  ['key' => 'parking',       'href' => '../admin/parking-management.php',       'icon' => 'bi-grid-3x3-gap-fill',     'label' => 'Parking Management'],
+  ['key' => 'vehicles',      'href' => '../admin/vehicle-records.php',      'icon' => 'bi-car-front-fill',        'label' => 'Vehicle Records'],
+  ['key' => 'accounts',      'href' => '../admin/account-management.php',      'icon' => 'bi-people-fill',           'label' => 'User &amp; Account Management'],
+  ['key' => 'logs',          'href' => '../admin/audit-logs.php',          'icon' => 'bi-list-ul',               'label' => 'Activity &amp; Audit Logs'],
+  ['key' => 'reports',       'href' => '../admin/analytics-reports.php',       'icon' => 'bi-bar-chart-fill',        'label' => 'Reports &amp; Analytics'],
+  ['key' => 'hardware',      'href' => '../admin/hardware.php',      'icon' => 'bi-hdd-network-fill',      'label' => 'Hardware Monitoring', 'badge' => $sidebar_hw_badge],
+  ['key' => 'notifications', 'href' => '../admin/notifications.php', 'icon' => 'bi-bell-fill',             'label' => 'Notifications',       'badge' => $sidebar_notif_badge],
+  ['key' => 'config',        'href' => '../admin/config.php',        'icon' => 'bi-gear-fill',             'label' => 'System Configuration'],
 ];
 ?>
 <div class="sidebar-backdrop" id="sidebarBackdrop"></div>

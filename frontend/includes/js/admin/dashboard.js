@@ -7,28 +7,14 @@
  * cards, parking occupancy, hardware summary, alerts, activity log +
  * "View all" modal, and the frontend simulation panel. Header behavior
  * (clock, notifications, search, profile) lives in admin-header.js;
- * sidebar behavior lives in admin-sidebar.js.
+ * sidebar behavior lives in admin-sidebar.js. Shared helpers come from
+ * admin-global.js's window.PSASUI — load that file before this one.
  * ============================================================================
  */
 (function () {
   "use strict";
 
-  function escapeHtml(str) {
-    const div = document.createElement("div");
-    div.textContent = str ?? "";
-    return div.innerHTML;
-  }
-
-  function fmtTime(iso) {
-    try { return new Date(iso).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" }); }
-    catch (e) { return iso; }
-  }
-
-  const ACTIVITY_META = {
-    entry:            { label: "Vehicle Entry",   icon: "bi-arrow-down-right-circle", colorVar: "--green" },
-    exit:             { label: "Vehicle Exit",     icon: "bi-arrow-up-right-circle",   colorVar: "--amber" },
-    hardware_failure: { label: "Hardware Failure", icon: "bi-exclamation-triangle",    colorVar: "--danger" },
-  };
+  const { escapeHtml, fmtTime, activityMeta: ACTIVITY_META } = PSASUI;
 
   // ── Stat cards + Parking Occupancy ───────────────────────────────────────
   function renderParkingStats() {
@@ -134,6 +120,10 @@
   }
 
   // ── Alerts (derived from unread notifications) ──────────────────────────
+  // PREVIEW-CAP CONVENTION: dashboard cards show a short preview, not the
+  // full record set — full history lives behind "View all" (modal/page).
+  // Narrow cards (Alerts, ~5 cols): cap at 4. Wide cards (Recent Activity,
+  // ~7 cols): cap at 10. Match these caps when adding new preview cards.
   function renderAlerts() {
     const container = document.getElementById("alertsList");
     if (!container) return;
@@ -163,7 +153,7 @@
   function renderRecentActivity() {
     const tbody = document.getElementById("recentActivityBody");
     if (!tbody) return;
-    const items = PSAS.state.activity.slice(0, 5);
+    const items = PSAS.state.activity.slice(0, 10);
 
     if (!items.length) {
       tbody.innerHTML = `
@@ -180,11 +170,11 @@
   function rowHtml(item) {
     const meta = ACTIVITY_META[item.type];
     const plate = item.vehicle ? `<span class="plate-badge">${escapeHtml(item.vehicle)}</span>` : "—";
-    const slot = item.slot ? ` <span style="color:var(--slate);">→ ${escapeHtml(item.slot)}</span>` : "";
+    const slot = item.slot ? ` <span class="activity-slot-arrow">→ ${escapeHtml(item.slot)}</span>` : "";
     return `
       <tr>
         <td class="log-ts">${fmtTime(item.timestamp)}</td>
-        <td><i class="bi ${meta.icon}" style="color:var(${meta.colorVar});margin-right:6px;"></i>${meta.label}</td>
+        <td><span class="activity-type"><i class="bi ${meta.icon} ${item.type}"></i>${meta.label}</span></td>
         <td>${plate}${slot}</td>
         <td>${escapeHtml(item.description)}</td>
       </tr>`;
@@ -273,104 +263,13 @@
     if (nextBtn) nextBtn.addEventListener("click", () => { activityModalState.page++; renderActivityModal(); });
   }
 
-  // ── Frontend Simulation Panel (dev/demo only) ────────────────────────────
-  function showSimFeedback(msg, isError) {
-    const el = document.getElementById("simFeedback");
-    if (!el) return;
-    el.textContent = msg;
-    el.className = "sim-feedback" + (isError ? " error" : " success");
-    el.classList.remove("d-none");
-    clearTimeout(showSimFeedback._t);
-    showSimFeedback._t = setTimeout(() => el.classList.add("d-none"), 3200);
-  }
-
-  function initSimulationPanel() {
-    const toggle = document.getElementById("simPanelToggle");
-    const panel = document.getElementById("simPanel");
-    if (toggle && panel) {
-      toggle.addEventListener("click", () => {
-        const isOpen = panel.classList.toggle("open");
-        toggle.setAttribute("aria-expanded", String(isOpen));
-      });
-    }
-
-    const entryBtn = document.getElementById("simEntryBtn");
-    const entryInput = document.getElementById("simEntryPlate");
-    if (entryBtn) {
-      entryBtn.addEventListener("click", () => {
-        const plate = entryInput.value || `SIM-${Math.floor(1000 + Math.random() * 9000)}`;
-        const res = PSAS.actions.simulateEntry(plate);
-        if (res.ok) { showSimFeedback(`${plate.toUpperCase()} allocated to ${res.slot}.`, false); entryInput.value = ""; }
-        else showSimFeedback(res.error, true);
-      });
-    }
-
-    const exitBtn = document.getElementById("simExitBtn");
-    const exitSelect = document.getElementById("simExitPlateSelect");
-    if (exitBtn) {
-      exitBtn.addEventListener("click", () => {
-        const plate = exitSelect.value;
-        if (!plate) { showSimFeedback("Select a vehicle currently inside first.", true); return; }
-        const res = PSAS.actions.simulateExit(plate);
-        if (res.ok) showSimFeedback(`${plate} exited from ${res.slot}.`, false);
-        else showSimFeedback(res.error, true);
-      });
-    }
-
-    const failBtn = document.getElementById("simFailBtn");
-    const failSelect = document.getElementById("simHardwareSelect");
-    if (failBtn) {
-      failBtn.addEventListener("click", () => {
-        const id = failSelect.value;
-        if (!id) { showSimFeedback("Select a hardware component first.", true); return; }
-        PSAS.actions.triggerHardwareFailure(id);
-        showSimFeedback("Hardware failure triggered.", false);
-      });
-    }
-
-    const resolveBtn = document.getElementById("simResolveBtn");
-    if (resolveBtn) {
-      resolveBtn.addEventListener("click", () => {
-        const id = failSelect.value;
-        if (!id) { showSimFeedback("Select a hardware component first.", true); return; }
-        PSAS.actions.resolveHardware(id);
-        showSimFeedback("Hardware marked resolved.", false);
-      });
-    }
-
-    const resetBtn = document.getElementById("simResetBtn");
-    if (resetBtn) {
-      resetBtn.addEventListener("click", () => {
-        PSAS.actions.resetSimulation();
-        showSimFeedback("Simulation state reset.", false);
-      });
-    }
-  }
-
-  function refreshSimSelectors() {
-    const exitSelect = document.getElementById("simExitPlateSelect");
-    if (exitSelect) {
-      const inside = Object.values(PSAS.state.vehicles).filter(v => v.status === "inside");
-      const current = exitSelect.value;
-      exitSelect.innerHTML = `<option value="">Select vehicle inside…</option>` +
-        inside.map(v => `<option value="${escapeHtml(v.plate)}">${escapeHtml(v.plate)} — ${escapeHtml(v.slot)}</option>`).join("");
-      if (inside.some(v => v.plate === current)) exitSelect.value = current;
-    }
-    const hwSelect = document.getElementById("simHardwareSelect");
-    if (hwSelect && !hwSelect.dataset.populated) {
-      hwSelect.innerHTML = `<option value="">Select hardware…</option>` +
-        PSAS.state.hardware.map(h => `<option value="${h.id}">${escapeHtml(h.name)}</option>`).join("");
-      hwSelect.dataset.populated = "1";
-    }
-  }
-
   // ── Master render + subscription ─────────────────────────────────────────
   function renderAll() {
     renderParkingStats();
     renderHardwareStatus();
     renderAlerts();
     renderRecentActivity();
-    refreshSimSelectors();
+    PSASUI.refreshSimSelectors();
 
     const activityModalEl = document.getElementById("activityModal");
     if (activityModalEl && activityModalEl.classList.contains("show")) renderActivityModal();
@@ -379,7 +278,7 @@
   document.addEventListener("DOMContentLoaded", () => {
     initParkingDrilldown();
     initActivityModal();
-    initSimulationPanel();
+    PSASUI.initSimPanel();
     renderAll();
 
     if (window.PSAS && PSAS.subscribe) PSAS.subscribe(renderAll);

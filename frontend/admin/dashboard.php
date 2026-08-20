@@ -29,8 +29,8 @@ $page_subheading = "System-wide monitoring and status";
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
-  <!-- admin-dashboard.css imports assets/css/admin/sidebar.css -->
-  <link rel="stylesheet" href="../includes/css/admin-dashboard.css">
+  <!-- admin-dashboard.css imports admin-global.css (tokens/shell/shared UI), which imports sidebar.css -->
+  <link rel="stylesheet" href="../includes/css/admin/dashboard.css">
 </head>
 <body>
 
@@ -76,9 +76,10 @@ $page_subheading = "System-wide monitoring and status";
       </div>
 
       <!-- 2. Parking Status — Utilization + Alerts -->
+      <div class="dash-section-label">Parking Status</div>
       <div class="row g-4 mb-4">
         <div class="col-lg-7">
-          <div class="psas-card m-0" style="height:100%;">
+          <div class="psas-card m-0 h-100">
             <div class="d-flex justify-content-between align-items-center mb-3">
               <h3 class="card-title-sm m-0"><i class="bi bi-speedometer"></i> Parking Occupancy</h3>
               <span class="demo-tag">Simulated data</span>
@@ -90,7 +91,7 @@ $page_subheading = "System-wide monitoring and status";
               <div class="col-6">
                 <div class="mini-tile">
                   <div class="mini-tile-header">
-                    <span class="mini-tile-title"><i class="bi bi-arrow-down-right-circle-fill" style="color:var(--green);margin-right:4px;"></i>Entries Today</span>
+                    <span class="mini-tile-title"><i class="bi bi-arrow-down-right-circle-fill accent-green"></i>Entries Today</span>
                   </div>
                   <div class="mini-tile-value" id="stat-entries-today">0</div>
                 </div>
@@ -98,21 +99,21 @@ $page_subheading = "System-wide monitoring and status";
               <div class="col-6">
                 <div class="mini-tile">
                   <div class="mini-tile-header">
-                    <span class="mini-tile-title"><i class="bi bi-arrow-up-right-circle-fill" style="color:var(--amber);margin-right:4px;"></i>Exits Today</span>
+                    <span class="mini-tile-title"><i class="bi bi-arrow-up-right-circle-fill accent-amber"></i>Exits Today</span>
                   </div>
                   <div class="mini-tile-value" id="stat-exits-today">0</div>
                 </div>
               </div>
             </div>
 
-            <div class="mt-3 pt-3" style="border-top:1px solid var(--ice-dark);font-size:0.8rem;color:var(--slate);">
-              <i class="bi bi-car-front"></i> <strong id="stat-current-vehicles" style="color:var(--navy);">0</strong> vehicles currently inside the parking area
+            <div class="helper-text bordered-top">
+              <i class="bi bi-car-front"></i> <strong id="stat-current-vehicles">0</strong> vehicles currently inside the parking area
             </div>
           </div>
         </div>
 
         <div class="col-lg-5">
-          <div class="psas-card m-0" style="height:100%;">
+          <div class="psas-card m-0 h-100">
             <div class="d-flex justify-content-between align-items-center mb-3">
               <h3 class="card-title-sm m-0"><i class="bi bi-exclamation-triangle-fill"></i> Alerts</h3>
               <a href="admin-notifications.php" class="link-quiet">View all</a>
@@ -123,14 +124,15 @@ $page_subheading = "System-wide monitoring and status";
       </div>
 
       <!-- 3 & 4. System Health + Recent Activity -->
+      <div class="dash-section-label">System Health &amp; Activity</div>
       <div class="row g-4 mb-4">
         <div class="col-lg-5">
-          <div class="psas-card m-0" style="height:100%;">
+          <div class="psas-card m-0 h-100">
             <div class="d-flex justify-content-between align-items-center mb-1">
               <h3 class="card-title-sm m-0"><i class="bi bi-hdd-network-fill"></i> System Health</h3>
-              <a href="admin-hardware.php" class="link-quiet">Details</a>
+              <a href="admin-hardware.php" class="link-quiet">View all</a>
             </div>
-            <div style="font-size:0.78rem;color:var(--slate);margin-bottom:0.9rem;" id="hardwareSummaryLabel">Checking hardware…</div>
+            <div class="helper-text mb-3" id="hardwareSummaryLabel">Checking hardware…</div>
             <div class="d-flex flex-column gap-2" id="hardwareStatusGrid"></div>
           </div>
         </div>
@@ -140,7 +142,7 @@ $page_subheading = "System-wide monitoring and status";
             <div class="d-flex justify-content-between align-items-center mb-3">
               <h3 class="card-title-sm m-0"><i class="bi bi-list-ul"></i> Recent Activity <span class="demo-tag">Simulated data</span></h3>
               <div class="d-flex align-items-center gap-3">
-                <button type="button" class="link-quiet-btn" id="btnViewAllActivity">View all activity</button>
+                <button type="button" class="link-quiet-btn" id="btnViewAllActivity">View all</button>
                 <a href="admin-logs.php" class="link-quiet">Full log module</a>
               </div>
             </div>
@@ -177,7 +179,7 @@ $page_subheading = "System-wide monitoring and status";
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body p-0" id="parkingDrilldownBody"></div>
-      <div class="psas-modal-footer" style="justify-content:flex-end;">
+      <div class="psas-modal-footer end">
         <button type="button" class="btn-psas-secondary" data-bs-dismiss="modal">Close</button>
       </div>
     </div>
@@ -225,7 +227,7 @@ $page_subheading = "System-wide monitoring and status";
         </div>
       </div>
 
-      <div class="psas-modal-footer" style="justify-content:flex-end;">
+      <div class="psas-modal-footer end">
         <button type="button" class="btn-psas-secondary" data-bs-dismiss="modal">Close</button>
       </div>
     </div>
@@ -233,47 +235,13 @@ $page_subheading = "System-wide monitoring and status";
 </div>
 
 <!-- ── FRONTEND SIMULATION panel — dev/demo only, not a production feature ── -->
-<div class="sim-panel-wrap">
-  <button type="button" class="sim-panel-toggle" id="simPanelToggle" aria-expanded="false" aria-controls="simPanel">
-    <i class="bi bi-sliders"></i> Frontend Simulation
-  </button>
-  <div class="sim-panel" id="simPanel">
-    <div class="sim-panel-title"><i class="bi bi-flask"></i> Frontend Simulation</div>
-
-    <div class="sim-group">
-      <label for="simEntryPlate">Simulate Vehicle Entry</label>
-      <input type="text" id="simEntryPlate" placeholder="Plate number (optional)">
-      <button type="button" class="sim-btn primary" id="simEntryBtn" style="width:100%;">Simulate Entry</button>
-    </div>
-
-    <div class="sim-group">
-      <label for="simExitPlateSelect">Simulate Vehicle Exit</label>
-      <select id="simExitPlateSelect"><option value="">Select vehicle inside…</option></select>
-      <button type="button" class="sim-btn primary" id="simExitBtn" style="width:100%;">Simulate Exit</button>
-    </div>
-
-    <div class="sim-divider"></div>
-
-    <div class="sim-group">
-      <label for="simHardwareSelect">Hardware Component</label>
-      <select id="simHardwareSelect"><option value="">Select hardware…</option></select>
-      <div class="sim-btn-row">
-        <button type="button" class="sim-btn danger" id="simFailBtn">Trigger Failure</button>
-        <button type="button" class="sim-btn" id="simResolveBtn">Mark Resolved</button>
-      </div>
-    </div>
-
-    <div class="sim-divider"></div>
-    <button type="button" class="sim-btn" id="simResetBtn" style="width:100%;">Reset Simulation</button>
-
-    <div class="sim-feedback d-none" id="simFeedback"></div>
-  </div>
-</div>
+<?php require __DIR__ . '/../includes/admin/sim-panel.php'; ?>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="../includes/js/admin-state.js"></script>
-<script src="../includes/js/sidebar.js"></script>
-<script src="../includes/js/admin-header.js"></script>
-<script src="../includes/js/admin-dashboard.js"></script>
+<script src="../includes/js/admin-global.js"></script>
+<script src="../includes/js/admin/state.js"></script>
+<script src="../includes/js/admin/sidebar.js"></script>
+<script src="../includes/js/admin/header.js"></script>
+<script src="../includes/js/admin/dashboard.js"></script>
 </body>
 </html>

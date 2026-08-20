@@ -24,7 +24,7 @@ $page_title = "Security Dashboard | PSAS";
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
   <!-- Dashboard Styles -->
-  <link rel="stylesheet" href="../includes/css/staff-dashboard.css">
+  <link rel="stylesheet" href="../includes/css/staff/staff-dashboard.css">
   <style>
     /* Hard override: nullify any .stat-card border rules from shared style.css */
     .stat-card,
@@ -566,7 +566,7 @@ $page_title = "Security Dashboard | PSAS";
 <!-- Bootstrap 5 JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <!-- Dashboard Logic -->
-<script src="../includes/js/staff-dashboard.js"></script>
+<script src="../includes/js/staff/staff-dashboard.js"></script>
 
 </body>
 </html>

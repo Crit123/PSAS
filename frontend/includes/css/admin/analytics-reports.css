@@ -1,0 +1,16 @@
+/* ==========================================================================
+   PSAS ADMIN — Reports & Analytics page-specific Stylesheet
+   Loads admin-global.css for tokens/shell/shared UI plus the chart-bar and
+   chart-grouped dependency-free chart classes. Only rules unique to this
+   page (print handling) live below.
+   ========================================================================== */
+
+@import url("../admin-global.css");
+
+.report-card-title { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.1rem; }
+
+@media print {
+  .admin-sidebar, .admin-topbar, .sim-panel-wrap, .btn-psas-primary { display: none !important; }
+  .admin-main { margin-left: 0 !important; }
+  .psas-card { box-shadow: none !important; border: 1px solid #E2E8F0 !important; }
+}
