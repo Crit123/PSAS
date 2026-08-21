@@ -59,7 +59,7 @@ $sidebar_links = [
   ['key' => 'reports',       'href' => '../admin/analytics-reports.php',       'icon' => 'bi-bar-chart-fill',        'label' => 'Reports &amp; Analytics'],
   ['key' => 'hardware',      'href' => '../admin/hardware.php',      'icon' => 'bi-hdd-network-fill',      'label' => 'Hardware Monitoring', 'badge' => $sidebar_hw_badge],
   ['key' => 'notifications', 'href' => '../admin/notifications.php', 'icon' => 'bi-bell-fill',             'label' => 'Notifications',       'badge' => $sidebar_notif_badge],
-  ['key' => 'config',        'href' => '../admin/config.php',        'icon' => 'bi-gear-fill',             'label' => 'System Configuration'],
+  ['key' => 'config',        'href' => '../admin/system-config.php',        'icon' => 'bi-gear-fill',             'label' => 'System Configuration'],
 ];
 ?>
 <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
@@ -85,7 +85,7 @@ $sidebar_links = [
     <?php endforeach; ?>
 
     <div class="sidebar-section-label">Account</div>
-    <a class="sidebar-link<?= $active_nav === 'profile' ? ' active' : '' ?>" href="admin-profile.php"
+    <a class="sidebar-link<?= $active_nav === 'profile' ? ' active' : '' ?>" href="profile.php"
        <?= $active_nav === 'profile' ? 'aria-current="page"' : '' ?>>
       <i class="bi bi-person-circle"></i> Profile / Account
     </a>

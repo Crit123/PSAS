@@ -1,0 +1,8 @@
+/* ==========================================================================
+   PSAS ADMIN — System Configuration page-specific Stylesheet
+   Loads admin-global.css for tokens/shell/shared UI, including the
+   .settings-row / .form-control-psas / .switch classes this page relies
+   on. Nothing page-specific needed yet.
+   ========================================================================== */
+
+@import url("../admin-global.css");

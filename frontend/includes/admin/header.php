@@ -102,10 +102,10 @@ $admin_display_role = $admin_display_role ?? 'System Administrator';
         <i class="bi bi-chevron-down header-caret d-none d-md-inline"></i>
       </button>
       <div class="header-dropdown profile-dropdown" id="profileDropdown" role="menu">
-        <a class="profile-dropdown-item" href="admin-profile.php">
+        <a class="profile-dropdown-item" href="../admin/profile.php">
           <i class="bi bi-person"></i> Profile
         </a>
-        <a class="profile-dropdown-item" href="admin-config.php">
+        <a class="profile-dropdown-item" href="../admin/system-config.php">
           <i class="bi bi-gear"></i> Settings
         </a>
         <div class="header-dropdown-divider"></div>

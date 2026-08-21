@@ -1,0 +1,9 @@
+/* ==========================================================================
+   PSAS ADMIN — Profile / Account page-specific Stylesheet
+   Loads admin-global.css for tokens/shell/shared UI, including the
+   .profile-hero-* / .admin-avatar.lg / .role-badge / .settings-row /
+   .form-control-psas classes this page relies on. Nothing page-specific
+   needed yet.
+   ========================================================================== */
+
+@import url("../admin-global.css");

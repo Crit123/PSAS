@@ -276,12 +276,80 @@ body {
 .mini-tile-title i.accent-navy { color: var(--navy); }
 .mini-tile-value { font-size: 1.4rem; font-weight: 800; color: var(--navy); letter-spacing: -0.01em; font-variant-numeric: tabular-nums; }
 
+/* ── Role badge — distinct from status-chip since role isn't a status.
+   Originated on the Accounts table; also used by Profile / Account. ───── */
+.role-badge {
+  display: inline-flex; align-items: center; font-size: 0.68rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.04em;
+  padding: 0.2rem 0.55rem; border-radius: var(--radius-sm);
+}
+.role-badge.admin { background: #EEF2FF; color: #4338CA; }
+.role-badge.staff { background: var(--ice); color: var(--slate); }
+
+/* ── Profile hero (Profile / Account page) ───────────────────────────────── */
+.admin-avatar.lg { width: 72px; height: 72px; font-size: 1.6rem; }
+.profile-hero { display: flex; align-items: center; gap: 1.25rem; flex-wrap: wrap; }
+.profile-hero-info { flex: 1; min-width: 200px; }
+.profile-hero-name { font-size: 1.25rem; font-weight: 800; color: var(--navy); letter-spacing: -0.01em; }
+.profile-hero-meta { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.35rem; flex-wrap: wrap; }
+.profile-hero-email { font-size: 0.82rem; color: var(--slate); margin-top: 0.3rem; }
+.profile-hero-stats { display: flex; gap: 1.5rem; flex-wrap: wrap; }
+.profile-hero-stat { text-align: right; }
+.profile-hero-stat-value { font-size: 0.95rem; font-weight: 800; color: var(--navy); }
+.profile-hero-stat-label { font-size: 0.66rem; font-weight: 700; color: var(--slate-light); text-transform: uppercase; letter-spacing: 0.05em; }
+
 /* ── Table row action buttons (Accounts, Hardware, any listing with
    per-row buttons) ────────────────────────────────────────────────────── */
 .row-actions { display: flex; gap: 0.4rem; justify-content: flex-end; }
 .row-actions .btn-psas-secondary, .row-actions .btn-psas-danger, .row-actions .btn-psas-primary {
   padding: 0.32rem 0.65rem; font-size: 0.74rem;
 }
+
+/* ── Settings forms (System Configuration and any future settings page) ──── */
+.settings-section-title {
+  font-size: 0.78rem; font-weight: 700; color: var(--slate); text-transform: uppercase; letter-spacing: 0.08em;
+  display: flex; align-items: center; gap: 0.45rem; margin-bottom: 1.1rem;
+}
+.settings-section-title i { color: var(--navy); font-size: 0.95rem; }
+.settings-row {
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 1.5rem;
+  padding: 1rem 0; border-bottom: 1px solid var(--ice-dark);
+}
+.settings-row:last-child { border-bottom: none; padding-bottom: 0; }
+.settings-row:first-child { padding-top: 0; }
+.settings-row-label { font-size: 0.86rem; font-weight: 700; color: var(--text-main); }
+.settings-row-hint { font-size: 0.76rem; color: var(--slate); margin-top: 2px; max-width: 420px; }
+.settings-row-control { flex-shrink: 0; min-width: 180px; display: flex; justify-content: flex-end; }
+
+.form-control-psas, .form-select-psas {
+  width: 100%; border: var(--border-strong); border-radius: var(--radius-sm);
+  padding: 0.5rem 0.7rem; font-family: var(--font); font-size: 0.85rem; color: var(--text-main);
+  background: var(--white); outline: none; transition: border-color var(--transition);
+}
+.form-control-psas:focus, .form-select-psas:focus { border-color: var(--green); }
+.form-control-psas.narrow { width: 110px; text-align: right; }
+
+/* Toggle switch */
+.switch { position: relative; display: inline-block; width: 42px; height: 24px; flex-shrink: 0; }
+.switch input { opacity: 0; width: 0; height: 0; }
+.switch-track {
+  position: absolute; cursor: pointer; inset: 0; background: var(--ice-dark);
+  border-radius: 999px; transition: background var(--transition);
+}
+.switch-track::before {
+  content: ""; position: absolute; height: 18px; width: 18px; left: 3px; top: 3px;
+  background: var(--white); border-radius: 50%; transition: transform var(--transition);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+.switch input:checked + .switch-track { background: var(--green); }
+.switch input:checked + .switch-track::before { transform: translateX(18px); }
+.switch input:focus-visible + .switch-track { outline: 2px solid var(--green-light); outline-offset: 2px; }
+
+.settings-danger-note {
+  display: flex; align-items: flex-start; gap: 0.55rem; background: #FFFBEB; border: 1px solid #FDE68A;
+  border-radius: var(--radius-md); padding: 0.7rem 0.85rem; font-size: 0.78rem; color: #92400E; margin-bottom: 1rem;
+}
+.settings-danger-note i { margin-top: 1px; }
 
 /* ── Demo/simulation tag reused from Staff side */
 .demo-tag {

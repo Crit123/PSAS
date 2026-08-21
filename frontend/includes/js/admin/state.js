@@ -123,6 +123,11 @@
       { id: "acc-8", name: "Sophia Ramos", email: "s.ramos@psas.local", role: "staff", department: "Zone C Patrol", status: "active", lastLogin: minutesAgoIso(65) },
     ],
     // FRONTEND MOCK DATA
+    // FUTURE: Replace with the authenticated admin's real id from session/
+    // auth (Admin Santos is also includes/admin/header.php's default
+    // $admin_display_name, so the two stay in sync in this mock).
+    currentAdminId: "acc-1",
+    // FRONTEND MOCK DATA
     // FUTURE: Replace with backend/API response — GET /api/admin/reports/weekly-trend
     // Used by Reports & Analytics for the entries-vs-exits trend chart.
     weeklyTrend: [
@@ -134,7 +139,28 @@
       { day: "Sat", entries: 289, exits: 275 },
       { day: "Sun", entries: 385, exits: 243 },
     ],
+    // FRONTEND MOCK DATA
+    // FUTURE: Replace with backend/API response — GET/PATCH /api/admin/config
+    // Read/written by System Configuration (admin-config.php). Kept as a
+    // flat, form-friendly object so each field maps 1:1 to an input.
+    config: {
+      orgName: "PSAS — Parking Allocation System",
+      timezone: "Asia/Manila",
+      totalCapacity: 220,
+      gateAutoLockMins: 5,
+      notifyEmailAlerts: true,
+      notifySmsAlerts: false,
+      notifyCriticalOnly: false,
+      hardwarePollingSec: 30,
+      sessionTimeoutMins: 30,
+      require2FA: false,
+      maintenanceMode: false,
+    },
   };
+
+  // Frozen copy of the config's starting values, used by "Reset to Defaults"
+  // on the System Configuration page — never mutated.
+  const CONFIG_DEFAULTS = Object.freeze({ ...state.config });
 
   function minutesAgoIso(mins) { return new Date(Date.now() - mins * 60000).toISOString(); }
 
@@ -202,6 +228,11 @@
     return Object.values(state.vehicles)
       .slice()
       .sort((a, b) => new Date(b.entryTime) - new Date(a.entryTime));
+  }
+
+  // The "logged in" admin for this mock session — Profile / Account page.
+  function getCurrentAdmin() {
+    return state.accounts.find(a => a.id === state.currentAdminId) || null;
   }
 
   function getAlerts() {
@@ -354,10 +385,35 @@
     return { ok: true };
   }
 
+  // FUTURE: Replace with backend/API response — PATCH /api/admin/accounts/:id
+  // Generic field update (name/email/department, etc.) — used by the
+  // Profile / Account page's "Edit Profile" form. setAccountStatus above
+  // stays as the narrower, status-only helper used by the Accounts table.
+  function updateAccount(accountId, partial) {
+    const acc = state.accounts.find(a => a.id === accountId);
+    if (!acc) return { ok: false, error: "Unknown account." };
+    Object.assign(acc, partial);
+    emit();
+    return { ok: true };
+  }
+
   function markAllNotificationsRead() {
     let changed = false;
     state.notifications.forEach(n => { if (!n.read) { n.read = true; changed = true; } });
     if (changed) emit();
+  }
+
+  // FUTURE: Replace with backend/API response — PATCH /api/admin/config
+  function updateConfig(partial) {
+    Object.assign(state.config, partial);
+    emit();
+    return { ok: true };
+  }
+
+  function resetConfig() {
+    Object.assign(state.config, CONFIG_DEFAULTS);
+    emit();
+    return { ok: true };
   }
 
   function resetSimulation() {
@@ -385,6 +441,7 @@
     vehicleRecords: getVehicleRecords,
     zoneBreakdown: getZoneBreakdown,
     weeklyTrend: getWeeklyTrend,
+    currentAdmin: getCurrentAdmin,
   };
   global.PSAS.actions = {
     simulateEntry,
@@ -395,5 +452,8 @@
     markAllNotificationsRead,
     resetSimulation,
     setAccountStatus,
+    updateAccount,
+    updateConfig,
+    resetConfig,
   };
-})(window);
+})(window);   
