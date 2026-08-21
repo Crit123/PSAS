@@ -1,11 +1,76 @@
 /* ==========================================================================
    PSAS ADMIN — Vehicle Records page-specific Stylesheet
-   Loads admin-global.css for tokens/shell/shared UI. Table, toolbar, stat
-   cards, and pagination are all reused from global as-is.
+   Loads admin-global.css for tokens/shell/shared UI (cards, tables,
+   buttons, status chips, toolbar, pagination, modal chrome). Everything
+   below is unique to this page: stat-card supporting text, the extended
+   toolbar (search + filter + refresh/clear), table refinements (plate
+   presentation, status icon+text, actions column), and the Details modal
+   body. No admin-global.css classes are overridden — only new, page-scoped
+   rules are added, keeping other Admin pages unaffected.
    ========================================================================== */
 
 @import url("../admin-global.css");
 
-.duration-badge {
-  font-family: var(--font-mono); font-size: 0.76rem; color: var(--text-sub);
+/* ── Stat cards: supporting hint line + subtle hover (scoped to this page
+   only — .stat-card itself stays untouched in admin-global.css) ─────────── */
+.vr-stat-card .stat-info p { margin-bottom: 0.15rem; }
+.vr-stat-card .vr-stat-hint { display: block; font-size: 0.7rem; font-weight: 500; color: var(--slate-light); }
+.vr-stat-card { transition: box-shadow var(--transition), transform var(--transition); }
+.vr-stat-card:hover { box-shadow: var(--shadow-elevated); transform: translateY(-1px); }
+
+/* ── Toolbar: search + refresh/clear grouped on the right, wraps on narrow
+   screens; filters keep their own row on top of that when space is tight ── */
+.vr-toolbar { align-items: center; }
+.vr-toolbar-actions { display: flex; align-items: center; gap: 0.5rem; margin-left: auto; flex: 1; min-width: 220px; max-width: 420px; }
+.vr-toolbar-actions .psas-toolbar-search { max-width: none; margin-left: 0; flex: 1; }
+.vr-icon-btn { width: 36px; height: 36px; padding: 0; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; }
+.vr-icon-btn i { font-size: 0.95rem; }
+.vr-icon-btn.spinning i { animation: vr-spin 0.5s linear; }
+@keyframes vr-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+@media (max-width: 767.98px) {
+  .vr-toolbar-actions { max-width: none; width: 100%; margin-left: 0; }
 }
+
+/* ── Table refinements ────────────────────────────────────────────────────── */
+.vr-table th, .vr-table td { padding-top: 0.85rem; padding-bottom: 0.85rem; }
+.vr-table tbody tr { cursor: pointer; transition: background var(--transition); }
+.vr-table .vr-actions-col { width: 44px; }
+
+.vr-plate-cell { display: flex; align-items: center; gap: 0.55rem; }
+.vr-plate-icon { color: var(--slate-light); font-size: 0.95rem; flex-shrink: 0; }
+.vr-plate-badge {
+  font-family: var(--font-mono); font-weight: 700; font-size: 0.86rem; letter-spacing: 0.02em;
+  color: var(--navy); background: var(--ice); border: var(--border); border-radius: var(--radius-sm);
+  padding: 0.2rem 0.55rem; display: inline-block;
+}
+
+.vr-status-cell { display: inline-flex; align-items: center; gap: 0.35rem; }
+.vr-status-cell i { font-size: 0.78rem; }
+
+.vr-duration { font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-sub); font-variant-numeric: tabular-nums; }
+.vr-duration.vr-duration-unavailable { color: var(--slate-light); font-style: italic; font-family: var(--font); }
+
+.vr-row-open-btn {
+  background: none; border: var(--border); border-radius: var(--radius-sm);
+  width: 30px; height: 30px; color: var(--slate); cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center;
+  transition: background var(--transition), color var(--transition), border-color var(--transition);
+}
+.vr-row-open-btn:hover { background: var(--ice); color: var(--navy); border-color: var(--border-strong); }
+.vr-row-open-btn:focus-visible, .vr-table tbody tr:focus-visible {
+  outline: 2px solid var(--green-light); outline-offset: -2px;
+}
+
+/* ── Empty state: two distinct messages (no records at all vs. no matches),
+   both reuse admin-global.css's .state-block ─────────────────────────────── */
+.vr-empty-row td { padding: 3rem 1rem; }
+
+/* ── Vehicle Details modal body ───────────────────────────────────────────── */
+.vr-details-body { padding: 1.25rem 1.5rem; }
+.vr-detail-row { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; padding: 0.6rem 0; border-bottom: 1px solid var(--ice-dark); }
+.vr-detail-row:last-child { border-bottom: none; }
+.vr-detail-label { font-size: 0.76rem; font-weight: 700; color: var(--slate); text-transform: uppercase; letter-spacing: 0.05em; flex-shrink: 0; }
+.vr-detail-value { font-size: 0.9rem; font-weight: 600; color: var(--text-main); text-align: right; }
+.vr-detail-value.mono { font-family: var(--font-mono); }
+.vr-detail-value.muted { color: var(--slate-light); font-weight: 500; font-style: italic; }

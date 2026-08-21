@@ -4,7 +4,11 @@
  * PURPOSE: Vehicle Records for PSAS Admin — every vehicle that has entered
  *          this session (currently inside or already exited), backed by
  *          the same PSAS.state store (admin-state.js) the Dashboard's
- *          entry/exit simulation writes to.
+ *          entry/exit simulation writes to. Reworked into a polished,
+ *          enterprise-style listing: richer stat cards, a fuller toolbar
+ *          (search + filter + refresh + clear), a Details modal, and
+ *          honest duration/empty-state handling — all on top of the
+ *          existing PSAS.state architecture (no new data store).
  * SCOPE: Frontend only. Mock data — see includes/js/admin-state.js for
  *        clearly labeled FUTURE API placeholders.
  */
@@ -12,7 +16,7 @@ session_start();
 $page_title      = "Vehicle Records | PSAS";
 $active_nav      = "vehicles";
 $page_heading    = "Vehicle Records";
-$page_subheading = "Entry/exit history — filter, search, and monitor status";
+$page_subheading = "Monitor and manage vehicle parking activity";
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -46,27 +50,43 @@ $page_subheading = "Entry/exit history — filter, search, and monitor status";
       <div class="dash-section-label">Vehicle Overview</div>
       <div class="row g-3 mb-4">
         <div class="col-6 col-lg-3">
-          <div class="psas-card stat-card total m-0">
+          <div class="psas-card stat-card total vr-stat-card m-0">
             <div class="stat-icon"><i class="bi bi-card-list"></i></div>
-            <div class="stat-info"><h4 id="vr-stat-total">0</h4><p>Total Records</p></div>
+            <div class="stat-info">
+              <h4 id="vr-stat-total">0</h4>
+              <p>Total Records</p>
+              <span class="vr-stat-hint">All recorded vehicle sessions</span>
+            </div>
           </div>
         </div>
         <div class="col-6 col-lg-3">
-          <div class="psas-card stat-card active m-0">
+          <div class="psas-card stat-card active vr-stat-card m-0">
             <div class="stat-icon"><i class="bi bi-car-front-fill"></i></div>
-            <div class="stat-info"><h4 id="vr-stat-inside">0</h4><p>Currently Inside</p></div>
+            <div class="stat-info">
+              <h4 id="vr-stat-inside">0</h4>
+              <p>Currently Inside</p>
+              <span class="vr-stat-hint">Vehicles currently parked</span>
+            </div>
           </div>
         </div>
         <div class="col-6 col-lg-3">
-          <div class="psas-card stat-card inactive m-0">
+          <div class="psas-card stat-card inactive vr-stat-card m-0">
             <div class="stat-icon"><i class="bi bi-box-arrow-right"></i></div>
-            <div class="stat-info"><h4 id="vr-stat-out">0</h4><p>Exited</p></div>
+            <div class="stat-info">
+              <h4 id="vr-stat-out">0</h4>
+              <p>Exited</p>
+              <span class="vr-stat-hint">Completed parking sessions</span>
+            </div>
           </div>
         </div>
         <div class="col-6 col-lg-3">
-          <div class="psas-card stat-card m-0">
+          <div class="psas-card stat-card vr-stat-card m-0">
             <div class="stat-icon"><i class="bi bi-arrow-down-right-circle-fill"></i></div>
-            <div class="stat-info"><h4 id="vr-stat-entries-today">0</h4><p>Entries Today</p></div>
+            <div class="stat-info">
+              <h4 id="vr-stat-entries-today">0</h4>
+              <p>Entries Today</p>
+              <span class="vr-stat-hint">Today's vehicle entries</span>
+            </div>
           </div>
         </div>
       </div>
@@ -74,27 +94,37 @@ $page_subheading = "Entry/exit history — filter, search, and monitor status";
       <!-- Records listing -->
       <div class="dash-section-label">All Vehicle Records <span class="demo-tag">Simulated data</span></div>
       <div class="psas-card">
-        <div class="psas-toolbar" id="vehiclesToolbar">
-          <div class="psas-toolbar-filters">
-            <button type="button" class="psas-toolbar-filter active" data-filter="all">All</button>
-            <button type="button" class="psas-toolbar-filter" data-filter="inside">Currently Inside</button>
-            <button type="button" class="psas-toolbar-filter" data-filter="out">Exited</button>
+        <div class="psas-toolbar vr-toolbar" id="vehiclesToolbar">
+          <div class="psas-toolbar-filters" role="group" aria-label="Filter vehicle records by status">
+            <button type="button" class="psas-toolbar-filter active" data-filter="all" aria-pressed="true">All</button>
+            <button type="button" class="psas-toolbar-filter" data-filter="inside" aria-pressed="false">Inside</button>
+            <button type="button" class="psas-toolbar-filter" data-filter="out" aria-pressed="false">Exited</button>
           </div>
-          <div class="psas-toolbar-search">
-            <i class="bi bi-search"></i>
-            <input type="text" placeholder="Search plate, space…" autocomplete="off" spellcheck="false">
+          <div class="vr-toolbar-actions">
+            <div class="psas-toolbar-search">
+              <i class="bi bi-search" aria-hidden="true"></i>
+              <label for="vehiclesSearchInput" class="visually-hidden">Search vehicle plate or parking space</label>
+              <input type="text" id="vehiclesSearchInput" placeholder="Search vehicle plate or parking space…" autocomplete="off" spellcheck="false">
+            </div>
+            <button type="button" class="btn-psas-secondary vr-icon-btn" id="vehiclesClearBtn" title="Clear search and filters" aria-label="Clear search and filters">
+              <i class="bi bi-x-lg" aria-hidden="true"></i>
+            </button>
+            <button type="button" class="btn-psas-secondary vr-icon-btn" id="vehiclesRefreshBtn" title="Refresh records" aria-label="Refresh records">
+              <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+            </button>
           </div>
         </div>
 
         <div class="table-responsive">
-          <table class="table-psas">
+          <table class="table-psas vr-table">
             <thead>
               <tr>
-                <th>Plate</th>
-                <th>Space</th>
+                <th>Vehicle</th>
+                <th>Parking Space</th>
                 <th>Status</th>
                 <th>Entry Time</th>
                 <th>Duration</th>
+                <th class="vr-actions-col"><span class="visually-hidden">Actions</span></th>
               </tr>
             </thead>
             <tbody id="vehiclesTableBody"></tbody>
@@ -111,6 +141,25 @@ $page_subheading = "Entry/exit history — filter, search, and monitor status";
       </div>
 
     </main>
+  </div>
+</div>
+
+<!-- ── Vehicle Details modal ─────────────────────────────────────────────── -->
+<div class="modal fade" id="vehicleDetailsModal" tabindex="-1" aria-labelledby="vehicleDetailsModalTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content psas-modal-content">
+      <div class="modal-header psas-modal-header">
+        <div>
+          <h5 class="modal-title psas-modal-title" id="vehicleDetailsModalTitle"><i class="bi bi-car-front me-2"></i>Vehicle Details</h5>
+          <div class="psas-modal-eyebrow">From live PSAS state — no invented fields</div>
+        </div>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body vr-details-body" id="vehicleDetailsBody"></div>
+      <div class="psas-modal-footer end">
+        <button type="button" class="btn-psas-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
   </div>
 </div>
 
