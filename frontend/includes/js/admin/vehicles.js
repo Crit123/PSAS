@@ -1,127 +1,122 @@
-<?php
 /**
- * PAGE: admin-vehicles.php
- * PURPOSE: Vehicle Records for PSAS Admin — every vehicle that has entered
- *          this session (currently inside or already exited), backed by
- *          the same PSAS.state store (admin-state.js) the Dashboard's
- *          entry/exit simulation writes to.
- * SCOPE: Frontend only. Mock data — see includes/js/admin-state.js for
- *        clearly labeled FUTURE API placeholders.
+ * includes/js/admin-vehicles.js
+ * ============================================================================
+ * PSAS ADMIN — Vehicle Records page logic
+ * Reads PSAS.state.vehicles (admin-state.js, same store the dashboard's
+ * entry/exit simulation writes to) and renders: stat cards and a
+ * filterable/searchable/paginated vehicle records table. Shared helpers
+ * come from window.PSASUI — see admin-global.js.
+ * ============================================================================
  */
-session_start();
-$page_title      = "Vehicle Records | PSAS";
-$active_nav      = "vehicles";
-$page_heading    = "Vehicle Records";
-$page_subheading = "Entry/exit history — filter, search, and monitor status";
-?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="PSAS — Vehicle Records">
-  <title><?= htmlspecialchars($page_title) ?></title>
+(function () {
+  "use strict";
 
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
-  <!-- admin-vehicles.css imports admin-global.css (tokens/shell/shared UI), which imports sidebar.css -->
-  <link rel="stylesheet" href="../includes/css/admin-vehicles.css">
-</head>
-<body>
+  const { escapeHtml, fmtDateTime } = PSASUI;
 
-<div class="admin-shell">
+  const listState = { page: 1, pageSize: 10, filter: "all", search: "" };
 
-  <?php require __DIR__ . '/../includes/admin/sidebar.php'; ?>
+  // ── Stat cards ────────────────────────────────────────────────────────────
+  function renderStats() {
+    const records = PSAS.select.vehicleRecords();
+    const inside = records.filter(v => v.status === "inside").length;
+    const out = records.filter(v => v.status === "out").length;
 
-  <div class="admin-main">
+    const setText = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+    setText("vr-stat-total", records.length);
+    setText("vr-stat-inside", inside);
+    setText("vr-stat-out", out);
+    setText("vr-stat-entries-today", PSAS.state.todayStats.entries);
+  }
 
-    <?php require __DIR__ . '/../includes/admin/header.php'; ?>
+  // ── Records table ─────────────────────────────────────────────────────────
+  function getFilteredRecords() {
+    let items = PSAS.select.vehicleRecords();
+    if (listState.filter !== "all") items = items.filter(v => v.status === listState.filter);
+    if (listState.search) {
+      const q = listState.search.toUpperCase();
+      items = items.filter(v =>
+        v.plate.toUpperCase().includes(q) ||
+        (v.slot && v.slot.toUpperCase().includes(q)));
+    }
+    return items;
+  }
 
-    <main class="admin-content">
+  function durationSince(iso) {
+    if (!iso) return "—";
+    const mins = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 60000));
+    if (mins < 60) return `${mins}m`;
+    const hrs = Math.floor(mins / 60);
+    const rem = mins % 60;
+    return `${hrs}h ${rem}m`;
+  }
 
-      <!-- Stat cards -->
-      <div class="dash-section-label">Vehicle Overview</div>
-      <div class="row g-3 mb-4">
-        <div class="col-6 col-lg-3">
-          <div class="psas-card stat-card total m-0">
-            <div class="stat-icon"><i class="bi bi-card-list"></i></div>
-            <div class="stat-info"><h4 id="vr-stat-total">0</h4><p>Total Records</p></div>
-          </div>
-        </div>
-        <div class="col-6 col-lg-3">
-          <div class="psas-card stat-card active m-0">
-            <div class="stat-icon"><i class="bi bi-car-front-fill"></i></div>
-            <div class="stat-info"><h4 id="vr-stat-inside">0</h4><p>Currently Inside</p></div>
-          </div>
-        </div>
-        <div class="col-6 col-lg-3">
-          <div class="psas-card stat-card inactive m-0">
-            <div class="stat-icon"><i class="bi bi-box-arrow-right"></i></div>
-            <div class="stat-info"><h4 id="vr-stat-out">0</h4><p>Exited</p></div>
-          </div>
-        </div>
-        <div class="col-6 col-lg-3">
-          <div class="psas-card stat-card m-0">
-            <div class="stat-icon"><i class="bi bi-arrow-down-right-circle-fill"></i></div>
-            <div class="stat-info"><h4 id="vr-stat-entries-today">0</h4><p>Entries Today</p></div>
-          </div>
-        </div>
-      </div>
+  function rowHtml(v) {
+    const badge = v.status === "inside"
+      ? `<span class="status-chip active">Inside</span>`
+      : `<span class="status-chip inactive">Out</span>`;
+    return `
+      <tr>
+        <td><span class="plate-badge">${escapeHtml(v.plate)}</span></td>
+        <td>${v.slot ? escapeHtml(v.slot) : "—"}</td>
+        <td>${badge}</td>
+        <td>${v.entryTime ? fmtDateTime(v.entryTime) : "—"}</td>
+        <td><span class="duration-badge">${durationSince(v.entryTime)}</span></td>
+      </tr>`;
+  }
 
-      <!-- Records listing -->
-      <div class="dash-section-label">All Vehicle Records <span class="demo-tag">Simulated data</span></div>
-      <div class="psas-card">
-        <div class="psas-toolbar" id="vehiclesToolbar">
-          <div class="psas-toolbar-filters">
-            <button type="button" class="psas-toolbar-filter active" data-filter="all">All</button>
-            <button type="button" class="psas-toolbar-filter" data-filter="inside">Currently Inside</button>
-            <button type="button" class="psas-toolbar-filter" data-filter="out">Exited</button>
-          </div>
-          <div class="psas-toolbar-search">
-            <i class="bi bi-search"></i>
-            <input type="text" placeholder="Search plate, space…" autocomplete="off" spellcheck="false">
-          </div>
-        </div>
+  function renderTable() {
+    const tbody = document.getElementById("vehiclesTableBody");
+    const pageLabel = document.getElementById("vehiclesPageLabel");
+    const prevBtn = document.getElementById("vehiclesPrevBtn");
+    const nextBtn = document.getElementById("vehiclesNextBtn");
+    if (!tbody) return;
 
-        <div class="table-responsive">
-          <table class="table-psas">
-            <thead>
-              <tr>
-                <th>Plate</th>
-                <th>Space</th>
-                <th>Status</th>
-                <th>Entry Time</th>
-                <th>Duration</th>
-              </tr>
-            </thead>
-            <tbody id="vehiclesTableBody"></tbody>
-          </table>
-        </div>
+    const all = getFilteredRecords();
+    const { page, totalPages, total, items } = PSASUI.paginate(all, listState.page, listState.pageSize);
+    listState.page = page;
 
-        <div class="psas-pagination">
-          <span class="page-label" id="vehiclesPageLabel">Page 1 of 1</span>
-          <div class="d-flex gap-2">
-            <button type="button" class="btn-psas-secondary" id="vehiclesPrevBtn">Previous</button>
-            <button type="button" class="btn-psas-secondary" id="vehiclesNextBtn">Next</button>
-          </div>
-        </div>
-      </div>
+    if (!items.length) {
+      tbody.innerHTML = `
+        <tr class="empty-state-row"><td colspan="5">
+          <i class="bi bi-car-front state-icon"></i>
+          <div class="state-label">No matching vehicle records</div>
+          <div class="state-hint">Try a different filter or search term</div>
+        </td></tr>`;
+    } else {
+      tbody.innerHTML = items.map(rowHtml).join("");
+    }
 
-    </main>
-  </div>
-</div>
+    if (pageLabel) pageLabel.textContent = `Page ${page} of ${totalPages} · ${total} record${total === 1 ? "" : "s"}`;
+    if (prevBtn) prevBtn.disabled = page <= 1;
+    if (nextBtn) nextBtn.disabled = page >= totalPages;
+  }
 
-<!-- ── FRONTEND SIMULATION panel — dev/demo only, not a production feature ── -->
-<?php require __DIR__ . '/../includes/admin/sim-panel.php'; ?>
+  function initToolbarAndPagination() {
+    PSASUI.initToolbar(document.getElementById("vehiclesToolbar"), state => {
+      listState.filter = state.filter;
+      listState.search = state.search;
+      listState.page = 1;
+      renderTable();
+    });
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="../includes/js/admin-global.js"></script>
-<script src="../includes/js/admin-state.js"></script>
-<script src="../includes/js/sidebar.js"></script>
-<script src="../includes/js/admin-header.js"></script>
-<script src="../includes/js/admin-vehicles.js"></script>
-</body>
-</html>
+    const prevBtn = document.getElementById("vehiclesPrevBtn");
+    const nextBtn = document.getElementById("vehiclesNextBtn");
+    if (prevBtn) prevBtn.addEventListener("click", () => { listState.page--; renderTable(); });
+    if (nextBtn) nextBtn.addEventListener("click", () => { listState.page++; renderTable(); });
+  }
+
+  // ── Master render + subscription ─────────────────────────────────────────
+  function renderAll() {
+    renderStats();
+    renderTable();
+    PSASUI.refreshSimSelectors();
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    initToolbarAndPagination();
+    PSASUI.initSimPanel();
+    renderAll();
+
+    if (window.PSAS && PSAS.subscribe) PSAS.subscribe(renderAll);
+  });
+})();
